@@ -30,8 +30,7 @@ const CreatePaymentDialog = ({ open, onOpenChange, instituteId, onSuccess }: Cre
     bankDetails: {
       bankName: '',
       accountNumber: '',
-      accountHolderName: '',
-      ifscCode: ''
+      accountHolderName: ''
     },
     lateFeeAmount: 0,
     lateFeeAfterDays: 5,
@@ -68,7 +67,22 @@ const CreatePaymentDialog = ({ open, onOpenChange, instituteId, onSuccess }: Cre
 
     setLoading(true);
     try {
-      await institutePaymentsApi.createPayment(instituteId, formData);
+      // Clean up bankDetails - only include if has meaningful data, exclude ifscCode
+      const cleanedBankDetails = formData.bankDetails && 
+        (formData.bankDetails.bankName || formData.bankDetails.accountNumber || formData.bankDetails.accountHolderName)
+        ? {
+            bankName: formData.bankDetails.bankName || '',
+            accountNumber: formData.bankDetails.accountNumber || '',
+            accountHolderName: formData.bankDetails.accountHolderName || '',
+          }
+        : undefined;
+
+      const payload = {
+        ...formData,
+        bankDetails: cleanedBankDetails,
+      };
+
+      await institutePaymentsApi.createPayment(instituteId, payload);
       toast({
         title: "Success",
         description: "Payment created successfully",
@@ -87,8 +101,7 @@ const CreatePaymentDialog = ({ open, onOpenChange, instituteId, onSuccess }: Cre
         bankDetails: {
           bankName: '',
           accountNumber: '',
-          accountHolderName: '',
-          ifscCode: ''
+          accountHolderName: ''
         },
         lateFeeAmount: 0,
         lateFeeAfterDays: 5,
@@ -210,27 +223,6 @@ const CreatePaymentDialog = ({ open, onOpenChange, instituteId, onSuccess }: Cre
                   />
                 </div>
                 <div>
-                  <Label htmlFor="ifscCode">Branch (Bank Branch)</Label>
-                  <Input
-                    id="ifscCode"
-                    value={formData.bankDetails?.ifscCode || ''}
-                    onChange={(e) => handleBankDetailsChange('ifscCode', e.target.value)}
-                    placeholder="Main Branch"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="accountNumber">Account Number</Label>
-                  <Input
-                    id="accountNumber"
-                    value={formData.bankDetails?.accountNumber || ''}
-                    onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
-                    placeholder="1234567890"
-                  />
-                </div>
-                <div>
                   <Label htmlFor="accountHolderName">Account Holder Name</Label>
                   <Input
                     id="accountHolderName"
@@ -239,6 +231,16 @@ const CreatePaymentDialog = ({ open, onOpenChange, instituteId, onSuccess }: Cre
                     placeholder="Springfield High School"
                   />
                 </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="accountNumber">Account Number</Label>
+                <Input
+                  id="accountNumber"
+                  value={formData.bankDetails?.accountNumber || ''}
+                  onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
+                  placeholder="1234567890"
+                />
               </div>
             </CardContent>
           </Card>
