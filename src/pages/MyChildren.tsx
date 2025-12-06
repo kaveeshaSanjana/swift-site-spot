@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { parentsApi, ParentChildrenResponse, ChildData } from '@/api/parents.api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Users, RefreshCw, ChevronRight, Heart, Mail, Hash } from 'lucide-react';
+import { User, Phone, Users, RefreshCw, ChevronRight, Heart, Mail, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import PageContainer from '@/components/layout/PageContainer';
@@ -17,6 +17,13 @@ const MyChildren = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, setSelectedChild } = useAuth();
+
+  // Auto-load children on mount
+  useEffect(() => {
+    if (user?.id && !childrenData) {
+      handleLoadChildren();
+    }
+  }, [user?.id]);
 
   const handleLoadChildren = async () => {
     if (!user?.id) {
@@ -32,10 +39,6 @@ const MyChildren = () => {
     try {
       const data = await parentsApi.getChildren(user.id);
       setChildrenData(data);
-      toast({
-        title: 'Success',
-        description: 'Children data loaded successfully',
-      });
     } catch (error) {
       console.error('Error loading children:', error);
       toast({
@@ -70,183 +73,201 @@ const MyChildren = () => {
       .slice(0, 2);
   };
 
-  const getRelationshipBadge = (relationship: string) => {
-    return (
-      <Badge variant="secondary" className="capitalize text-xs font-medium">
-        {relationship}
-      </Badge>
-    );
+  const getRelationshipColor = (relationship: string) => {
+    switch (relationship.toLowerCase()) {
+      case 'father':
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+      case 'mother':
+        return 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20';
+      case 'guardian':
+        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+      default:
+        return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const getRelationshipIcon = (relationship: string) => {
+    return relationship.charAt(0).toUpperCase() + relationship.slice(1);
   };
 
   return (
     <AppLayout currentPage="my-children">
       <PageContainer>
         <div className="space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <Heart className="w-8 h-8 text-primary" />
-                My Children
-              </h1>
-              <p className="text-muted-foreground">Manage and view your children's information</p>
-            </div>
-            {childrenData && (
+          {/* Modern Header */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 md:p-8 border border-primary/10">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                    <Heart className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">My Children</h1>
+                    <p className="text-muted-foreground text-sm md:text-base">
+                      View and manage your children's information
+                    </p>
+                  </div>
+                </div>
+              </div>
               <Button 
                 onClick={handleLoadChildren} 
                 disabled={loading}
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-2 bg-background/50 backdrop-blur-sm hover:bg-background/80"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
+            </div>
+            
+            {/* Parent Info */}
+            {childrenData && (
+              <div className="mt-4 pt-4 border-t border-primary/10">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-background/60 backdrop-blur-sm border border-border/50">
+                  <Avatar className="h-8 w-8 border-2 border-primary/20">
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                      {getInitials(childrenData.parentName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{childrenData.parentName}</span>
+                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-0">
+                    Parent
+                  </Badge>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Empty State - Load Data */}
-          {!childrenData && (
+          {/* Loading State */}
+          {loading && !childrenData && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="pt-6 pb-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-20 h-20 rounded-2xl bg-muted" />
+                      <div className="flex-1 space-y-3">
+                        <div className="h-5 bg-muted rounded w-3/4" />
+                        <div className="h-4 bg-muted rounded w-1/2" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && childrenData?.children.length === 0 && (
             <Card className="border-dashed border-2">
               <CardContent className="pt-12 pb-12">
-                <div className="text-center space-y-6">
-                  <div className="relative inline-flex">
-                    <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-                      <Users className="w-12 h-12 text-muted-foreground" />
-                    </div>
+                <div className="text-center space-y-4">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-muted flex items-center justify-center">
+                    <Users className="w-10 h-10 text-muted-foreground" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">Load Your Children</h3>
+                    <h3 className="text-xl font-semibold">No Children Found</h3>
                     <p className="text-muted-foreground max-w-sm mx-auto">
-                      Click the button below to fetch and display your children's information
+                      No children are linked to your account yet
                     </p>
                   </div>
-                  <Button 
-                    onClick={handleLoadChildren} 
-                    disabled={loading}
-                    size="lg"
-                    className="gap-2 px-8"
-                  >
-                    {loading ? (
-                      <>
-                        <RefreshCw className="w-5 h-5 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <Users className="w-5 h-5" />
-                        Load Children
-                      </>
-                    )}
-                  </Button>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Children List */}
-          {childrenData && (
-            <>
-              {/* Parent Info Badge */}
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-muted/50 border">
-                <Avatar className="h-8 w-8 border-2 border-primary/20">
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                    {getInitials(childrenData.parentName)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium">{childrenData.parentName}</span>
-                <Badge variant="secondary" className="text-xs">Parent</Badge>
-              </div>
-
-              {childrenData.children.length === 0 ? (
-                <Card className="border-dashed border-2">
-                  <CardContent className="pt-12 pb-12">
-                    <div className="text-center space-y-4">
-                      <Users className="w-16 h-16 mx-auto text-muted-foreground/50" />
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-semibold">No Children Found</h3>
-                        <p className="text-muted-foreground">No children are linked to your account yet</p>
+          {/* Children Grid */}
+          {childrenData && childrenData.children.length > 0 && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {childrenData.children.map((child, index) => (
+                <Card 
+                  key={`${child.id}-${child.relationship}-${index}`} 
+                  className="group relative overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2 cursor-pointer border-0 bg-gradient-to-br from-card to-card/50"
+                  onClick={() => handleSelectChild(child)}
+                >
+                  {/* Decorative gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  
+                  <CardContent className="relative pt-6 pb-6">
+                    <div className="space-y-5">
+                      {/* Image & Name Section */}
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
+                          {/* Profile Image */}
+                          <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-border shadow-lg group-hover:border-primary/30 transition-colors duration-300">
+                            {child.imageUrl ? (
+                              <img 
+                                src={child.imageUrl} 
+                                alt={child.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10 ${child.imageUrl ? 'hidden' : ''}`}>
+                              <span className="text-2xl font-bold text-primary">
+                                {getInitials(child.name)}
+                              </span>
+                            </div>
+                          </div>
+                          {/* Online indicator */}
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background flex items-center justify-center">
+                            <Sparkles className="w-2.5 h-2.5 text-white" />
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors duration-300">
+                            {child.name}
+                          </h3>
+                          <Badge 
+                            variant="outline" 
+                            className={`capitalize text-xs font-medium ${getRelationshipColor(child.relationship)}`}
+                          >
+                            {getRelationshipIcon(child.relationship)}
+                          </Badge>
+                        </div>
                       </div>
+                      
+                      {/* Contact Info */}
+                      <div className="space-y-2.5 pt-2 border-t border-border/50">
+                        <div className="flex items-center gap-3 text-sm">
+                          <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center">
+                            <Phone className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <span className="text-muted-foreground">
+                            {child.phoneNumber || 'No phone number'}
+                          </span>
+                        </div>
+                        {child.email && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center">
+                              <Mail className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                            <span className="text-muted-foreground truncate">{child.email}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <Button 
+                        className="w-full gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border-0 transition-all duration-300"
+                        variant="outline"
+                      >
+                        <User className="w-4 h-4" />
+                        View Details
+                        <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform duration-300" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {childrenData.children.map((child) => (
-                    <Card 
-                      key={`${child.id}-${child.relationship}`} 
-                      className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border hover:border-primary/30"
-                      onClick={() => handleSelectChild(child)}
-                    >
-                      <CardContent className="pt-6 pb-6">
-                        <div className="space-y-5">
-                          {/* Avatar & Name */}
-                          <div className="flex items-start gap-4">
-                            <div className="relative">
-                              <Avatar className="h-16 w-16 border-2 border-border shadow-sm">
-                                {child.imageUrl ? (
-                                  <AvatarImage 
-                                    src={child.imageUrl} 
-                                    alt={child.name}
-                                    onError={(e) => {
-                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                    }}
-                                  />
-                                ) : (
-                                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${child.id}`} />
-                                )}
-                                <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
-                                  {getInitials(child.name)}
-                                </AvatarFallback>
-                              </Avatar>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
-                                {child.name}
-                              </h3>
-                              {getRelationshipBadge(child.relationship)}
-                            </div>
-                          </div>
-                          
-                          {/* Info */}
-                          <div className="space-y-2 pt-2">
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                                <Hash className="w-3.5 h-3.5" />
-                              </div>
-                              <span className="truncate">ID: {child.id}</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                                <Phone className="w-3.5 h-3.5" />
-                              </div>
-                              <span>{child.phoneNumber || 'N/A'}</span>
-                            </div>
-                            {child.email && (
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                                  <Mail className="w-3.5 h-3.5" />
-                                </div>
-                                <span className="truncate">{child.email}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Select Button */}
-                          <Button 
-                            className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                            variant="outline"
-                          >
-                            Select Student
-                            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
+              ))}
+            </div>
           )}
         </div>
       </PageContainer>
