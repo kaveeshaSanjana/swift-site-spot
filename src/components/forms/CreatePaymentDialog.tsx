@@ -188,8 +188,6 @@ const CreatePaymentDialog = ({ open, onOpenChange, instituteId, onSuccess }: Cre
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="STUDENTS">Students</SelectItem>
-                      <SelectItem value="PARENTS">Parents</SelectItem>
-                      <SelectItem value="BOTH">Both</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

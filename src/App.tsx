@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner, ErrorToaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import Index from "./pages/Index";
 import QRAttendance from '@/components/QRAttendance';
 import RfidAttendance from '@/pages/RFIDAttendance';
@@ -39,6 +41,30 @@ import ChildTransportPage from '@/pages/ChildTransportPage';
 
 const queryClient = new QueryClient();
 
+// MUI Theme with Inter font
+const muiTheme = createTheme({
+  typography: {
+    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+    fontSize: 14,
+  },
+  components: {
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        },
+      },
+    },
+    MuiTablePagination: {
+      styleOverrides: {
+        root: {
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        },
+      },
+    },
+  },
+});
+
 const App = () => {
   useEffect(() => {
     // Force light mode
@@ -50,40 +76,43 @@ const App = () => {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <ErrorToaster />
-            <Routes>
-              {/* Main Routes - All handled by Index/AppContent */}
-              <Route path="/" element={<Index />} />
-              
-              {/* Hierarchical Routes with Context */}
-              <Route path="/institute/:instituteId/*" element={<Index />} />
-              <Route path="/organization/:organizationId/*" element={<Index />} />
-              <Route path="/child/:childId/*" element={<Index />} />
-              <Route path="/transport/:transportId/*" element={<Index />} />
-              
-              {/* Dedicated Page Routes */}
-              <Route path="/my-children" element={<MyChildren />} />
-              <Route path="/transport" element={<Transport />} />
-              <Route path="/system-payment" element={<Payments />} />
-              <Route path="/system-payments/create" element={<CreatePayment />} />
-              <Route path="/payment-submissions/:paymentId" element={<PaymentSubmissions />} />
-              <Route path="/payment-submissions" element={<PaymentSubmissionsPage />} />
-              <Route path="/my-submissions" element={<MySubmissions />} />
-              <Route path="/card-demo" element={<CardDemo />} />
-              
-              {/* Catch-all - Everything else goes to Index/AppContent */}
-              <Route path="*" element={<Index />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
+      <ThemeProvider theme={muiTheme}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <AuthProvider>
+              <Toaster />
+              <Sonner />
+              <ErrorToaster />
+              <Routes>
+                {/* Main Routes - All handled by Index/AppContent */}
+                <Route path="/" element={<Index />} />
+                
+                {/* Hierarchical Routes with Context */}
+                <Route path="/institute/:instituteId/*" element={<Index />} />
+                <Route path="/organization/:organizationId/*" element={<Index />} />
+                <Route path="/child/:childId/*" element={<Index />} />
+                <Route path="/transport/:transportId/*" element={<Index />} />
+                
+                {/* Dedicated Page Routes */}
+                <Route path="/my-children" element={<MyChildren />} />
+                <Route path="/transport" element={<Transport />} />
+                <Route path="/system-payment" element={<Payments />} />
+                <Route path="/system-payments/create" element={<CreatePayment />} />
+                <Route path="/payment-submissions/:paymentId" element={<PaymentSubmissions />} />
+                <Route path="/payment-submissions" element={<PaymentSubmissionsPage />} />
+                <Route path="/my-submissions" element={<MySubmissions />} />
+                <Route path="/card-demo" element={<CardDemo />} />
+                
+                {/* Catch-all - Everything else goes to Index/AppContent */}
+                <Route path="*" element={<Index />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };
 
 export default App;
+

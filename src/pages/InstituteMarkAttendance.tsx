@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { childAttendanceApi } from '@/api/childAttendance.api';
+import { getImageUrl } from '@/utils/imageUrlHelper';
 
 interface LastAttendance {
   instituteCardId: string;
@@ -242,59 +243,107 @@ const InstituteMarkAttendance = () => {
                 {location && (
                   <p className="text-sm flex items-start gap-1">
                     <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground">{location}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedInstitute?.name ? `${selectedInstitute.name} - ` : ''}{location}
+                    </span>
                   </p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-muted">
-            <CardContent className="p-12 sm:p-16">
-              <div className="flex flex-col items-center justify-center space-y-6">
-                <div className="relative">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden">
+            <CardContent className="p-8 sm:p-12 lg:p-16">
+              <div className="flex flex-col items-center justify-center space-y-8">
+                {/* Status Icon */}
+                <div className={`relative p-6 rounded-full ${
+                  lastAttendance 
+                    ? lastAttendance.status === 'present' 
+                      ? 'bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50' 
+                      : lastAttendance.status === 'absent'
+                      ? 'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50'
+                      : 'bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/50 dark:to-yellow-800/50'
+                    : 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50'
+                } shadow-lg`}>
                   {lastAttendance ? (
-                    <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" strokeWidth={2.5} />
+                    <CheckCircle className={`h-16 w-16 ${
+                      lastAttendance.status === 'present' 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : lastAttendance.status === 'absent'
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-yellow-600 dark:text-yellow-400'
+                    }`} strokeWidth={2} />
                   ) : (
-                    <Wifi className="h-12 w-12 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
+                    <Wifi className="h-16 w-16 text-blue-600 dark:text-blue-400" strokeWidth={2} />
                   )}
                 </div>
 
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-semibold text-foreground">
+                <div className="text-center space-y-4">
+                  <h2 className="text-3xl font-bold text-foreground">
                     {scannerStatus}
                   </h2>
+                  
                   {lastAttendance ? (
-                    <div className="space-y-3 flex flex-col items-center">
+                    <div className="space-y-6 flex flex-col items-center">
+                      {/* Student Image - Bigger and Modern */}
                       {lastAttendance.imageUrl && (
-                        <img
-                          src={lastAttendance.imageUrl}
-                          alt={`${lastAttendance.studentName} photo`}
-                          className="h-20 w-20 rounded-full object-cover ring-2 ring-primary/30 shadow-md"
-                          loading="lazy"
-                        />
+                        <div className="relative">
+                          <div className={`absolute inset-0 rounded-full blur-lg opacity-50 ${
+                            lastAttendance.status === 'present' 
+                              ? 'bg-green-400' 
+                              : lastAttendance.status === 'absent'
+                              ? 'bg-red-400'
+                              : 'bg-yellow-400'
+                          }`}></div>
+                          <img
+                            src={getImageUrl(lastAttendance.imageUrl)}
+                            alt={`${lastAttendance.studentName} photo`}
+                            className={`relative h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover ring-4 shadow-2xl ${
+                              lastAttendance.status === 'present' 
+                                ? 'ring-green-500' 
+                                : lastAttendance.status === 'absent'
+                                ? 'ring-red-500'
+                                : 'ring-yellow-500'
+                            }`}
+                            loading="lazy"
+                          />
+                        </div>
                       )}
-                      <p className="text-lg font-medium text-green-600 dark:text-green-400">
-                        {lastAttendance.studentName}
-                      </p>
-                      <p className={`text-base font-semibold ${
+                      
+                      {/* Student Name */}
+                      <p className={`text-2xl font-bold ${
                         lastAttendance.status === 'present' 
                           ? 'text-green-600 dark:text-green-400' 
                           : lastAttendance.status === 'absent'
                           ? 'text-red-600 dark:text-red-400'
                           : 'text-yellow-600 dark:text-yellow-400'
                       }`}>
+                        {lastAttendance.studentName}
+                      </p>
+                      
+                      {/* Status Badge */}
+                      <div className={`px-6 py-2 rounded-full font-bold text-lg ${
+                        lastAttendance.status === 'present' 
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                          : lastAttendance.status === 'absent'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                          : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
+                      }`}>
                         Status: {lastAttendance.status.toUpperCase()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Card ID: {lastAttendance.instituteCardId}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        User ID: {lastAttendance.userIdByInstitute}
-                      </p>
+                      </div>
+                      
+                      {/* Card Info */}
+                      <div className="text-center space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Card ID: <span className="font-medium text-foreground">{lastAttendance.instituteCardId}</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          User ID: <span className="font-medium text-foreground">{lastAttendance.userIdByInstitute}</span>
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">
+                    <p className="text-lg text-muted-foreground">
                       Place your RFID card near the scanner or enter ID below
                     </p>
                   )}

@@ -317,7 +317,20 @@ class EnhancedCachedApiClient {
           throw new Error('Authentication failed');
         }
         
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Parse error message from JSON response
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.message) {
+            errorMessage = Array.isArray(errorJson.message) 
+              ? errorJson.message.join(', ') 
+              : errorJson.message;
+          }
+        } catch {
+          // Keep default error message if JSON parsing fails
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const contentType = response.headers.get('Content-Type');
@@ -404,7 +417,20 @@ class EnhancedCachedApiClient {
         throw new Error('Authentication failed');
       }
       
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Parse error message from JSON response
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.message) {
+          errorMessage = Array.isArray(errorJson.message) 
+            ? errorJson.message.join(', ') 
+            : errorJson.message;
+        }
+      } catch {
+        // Keep default error message if JSON parsing fails
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('Content-Type');
@@ -474,7 +500,20 @@ class EnhancedCachedApiClient {
         throw new Error('Authentication failed');
       }
       
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Parse error message from JSON response
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.message) {
+          errorMessage = Array.isArray(errorJson.message) 
+            ? errorJson.message.join(', ') 
+            : errorJson.message;
+        }
+      } catch {
+        // Keep default error message if JSON parsing fails
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('Content-Type');
@@ -544,7 +583,20 @@ class EnhancedCachedApiClient {
         throw new Error('Authentication failed');
       }
       
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Parse error message from JSON response
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.message) {
+          errorMessage = Array.isArray(errorJson.message) 
+            ? errorJson.message.join(', ') 
+            : errorJson.message;
+        }
+      } catch {
+        // Keep default error message if JSON parsing fails
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('Content-Type');
@@ -612,7 +664,20 @@ class EnhancedCachedApiClient {
         throw new Error('Authentication failed');
       }
       
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Parse error message from JSON response
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.message) {
+          errorMessage = Array.isArray(errorJson.message) 
+            ? errorJson.message.join(', ') 
+            : errorJson.message;
+        }
+      } catch {
+        // Keep default error message if JSON parsing fails
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('Content-Type');

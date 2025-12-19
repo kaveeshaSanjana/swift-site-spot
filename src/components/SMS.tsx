@@ -26,6 +26,8 @@ import { apiClient } from '@/api/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import ClassMultiSelectDialog from '@/components/sms/ClassMultiSelectDialog';
+import SubjectMultiSelectDialog from '@/components/sms/SubjectMultiSelectDialog';
 
 interface SenderMask {
   maskId: string;
@@ -115,11 +117,9 @@ const SMS = () => {
   const [isCustomNow, setIsCustomNow] = useState(true);
   const [customScheduledAt, setCustomScheduledAt] = useState('');
 
-  // Input states for adding IDs
-  const [newClassId, setNewClassId] = useState('');
-  const [newSubjectId, setNewSubjectId] = useState('');
+  // Selection is handled via searchable pickers (no manual ID entry).
 
-  // Auto-set scheduled time when component mounts (Sri Lanka timezone)
+  // Auto-set scheduled time when component mounts and live update every second when "Send Now" is checked
   useEffect(() => {
     const getSriLankaTime = () => {
       const now = new Date();
@@ -130,7 +130,19 @@ const SMS = () => {
     const sriLankaTime = getSriLankaTime();
     setBulkScheduledAt(sriLankaTime);
     setCustomScheduledAt(sriLankaTime);
-  }, []);
+
+    // Live update when "Send Now" is checked
+    const interval = setInterval(() => {
+      if (isBulkNow) {
+        setBulkScheduledAt(getSriLankaTime());
+      }
+      if (isCustomNow) {
+        setCustomScheduledAt(getSriLankaTime());
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isBulkNow, isCustomNow]);
 
   // Load credentials from cache only on mount (no automatic refresh)
   useEffect(() => {
@@ -249,7 +261,7 @@ const SMS = () => {
       setPaymentForm({ requestedCredits: '', paymentAmount: '', paymentMethod: 'Bank Transfer', paymentReference: '', submissionNotes: '', paymentSlip: null });
       fetchPaymentSubmissions();
     } catch (error: any) {
-      toast({ title: 'Error', description: error?.response?.data?.message || 'Failed to submit payment', variant: 'destructive' });
+      toast({ title: 'Error', description: error?.message || 'Failed to submit payment', variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -397,26 +409,12 @@ const SMS = () => {
     );
   };
 
-  const addClassId = () => {
-    if (newClassId.trim() && !selectedClasses.includes(newClassId.trim())) {
-      setSelectedClasses([...selectedClasses, newClassId.trim()]);
-      setNewClassId('');
-    }
-  };
-
   const removeClassId = (id: string) => {
-    setSelectedClasses(selectedClasses.filter(c => c !== id));
-  };
-
-  const addSubjectId = () => {
-    if (newSubjectId.trim() && !selectedSubjects.includes(newSubjectId.trim())) {
-      setSelectedSubjects([...selectedSubjects, newSubjectId.trim()]);
-      setNewSubjectId('');
-    }
+    setSelectedClasses(selectedClasses.filter((c) => c !== id));
   };
 
   const removeSubjectId = (id: string) => {
-    setSelectedSubjects(selectedSubjects.filter(s => s !== id));
+    setSelectedSubjects(selectedSubjects.filter((s) => s !== id));
   };
 
 
@@ -651,19 +649,24 @@ const SMS = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="class-ids">Class IDs</Label>
+                  <Label htmlFor="class-ids">Classes</Label>
                   <div className="flex gap-2 mt-2">
                     <Input
                       id="class-ids"
-                      placeholder="Enter class ID"
-                      value={newClassId}
-                      onChange={(e) => setNewClassId(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addClassId()}
+                      value={selectedClasses.join(', ')}
+                      placeholder="Select classes"
+                      disabled
                     />
-                    <Button type="button" onClick={addClassId} size="icon" variant="outline">
-                      +
-                    </Button>
+                    <ClassMultiSelectDialog
+                      instituteId={currentInstituteId}
+                      userId={currentInstituteId}
+                      role={String(instituteRole || 'User')}
+                      selectedIds={selectedClasses}
+                      onChange={setSelectedClasses}
+                      triggerLabel="Select"
+                    />
                   </div>
+
                   {selectedClasses.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {selectedClasses.map((id) => (
@@ -676,19 +679,24 @@ const SMS = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="subject-ids">Subject IDs</Label>
+                  <Label htmlFor="subject-ids">Subjects</Label>
                   <div className="flex gap-2 mt-2">
                     <Input
                       id="subject-ids"
-                      placeholder="Enter subject ID"
-                      value={newSubjectId}
-                      onChange={(e) => setNewSubjectId(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSubjectId()}
+                      value={selectedSubjects.join(', ')}
+                      placeholder="Select subjects"
+                      disabled
                     />
-                    <Button type="button" onClick={addSubjectId} size="icon" variant="outline">
-                      +
-                    </Button>
+                    <SubjectMultiSelectDialog
+                      instituteId={currentInstituteId}
+                      userId={currentInstituteId}
+                      role={String(instituteRole || 'User')}
+                      selectedIds={selectedSubjects}
+                      onChange={setSelectedSubjects}
+                      triggerLabel="Select"
+                    />
                   </div>
+
                   {selectedSubjects.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {selectedSubjects.map((id) => (

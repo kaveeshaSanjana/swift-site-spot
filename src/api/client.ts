@@ -150,7 +150,9 @@ class ApiClient {
         return this.handleResponse<T>(retryResponse, retryFn, retryCount + 1);
       }
 
-      throw new Error(errorData.message || this.getErrorMessage(response.status));
+      // Prefer errorData.message from API response, fallback to generic message
+      const errorMessage = errorData.message || this.getErrorMessage(response.status);
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('Content-Type');

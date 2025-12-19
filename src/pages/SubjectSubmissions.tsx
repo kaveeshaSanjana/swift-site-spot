@@ -249,7 +249,7 @@ const SubjectSubmissions = () => {
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                           <div>
                             <strong className="text-gray-600 dark:text-gray-400">Amount:</strong>
-                            <p className="text-gray-900 dark:text-gray-100">₹{submission.paymentAmount.toLocaleString()}</p>
+                            <p className="text-gray-900 dark:text-gray-100">Rs {submission.paymentAmount.toLocaleString()}</p>
                           </div>
                           <div>
                             <strong className="text-gray-600 dark:text-gray-400">Method:</strong>
@@ -270,7 +270,7 @@ const SubjectSubmissions = () => {
                           {submission.lateFeeApplied && submission.lateFeeApplied > 0 && (
                             <div>
                               <strong className="text-gray-600 dark:text-gray-400">Late Fee:</strong>
-                              <p className="text-red-600">₹{submission.lateFeeApplied}</p>
+                              <p className="text-red-600">Rs {submission.lateFeeApplied}</p>
                             </div>
                           )}
                           <div>
@@ -382,7 +382,7 @@ const SubjectSubmissions = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  ₹{submissionsData.summary.totalAmountSubmitted.toLocaleString()}
+                  Rs {submissionsData.summary.totalAmountSubmitted.toLocaleString()}
                 </p>
               </CardContent>
             </Card>

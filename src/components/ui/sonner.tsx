@@ -3,7 +3,7 @@ import { Toaster as Sonner, toast } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
-// Success/info toasts: top-left
+// Success/info toasts: top-left (for attendance alerts)
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
 
@@ -15,13 +15,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:text-xs group-[.toaster]:py-2 group-[.toaster]:px-3",
+          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-[11px]",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-          error: "group-[.toaster]:!bg-destructive group-[.toaster]:!text-destructive-foreground group-[.toaster]:!border-destructive",
         },
       }}
       {...props}
@@ -41,12 +40,12 @@ const ErrorToaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-destructive group-[.toaster]:text-destructive-foreground group-[.toaster]:border-destructive group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-destructive-foreground/80",
+            "group toast group-[.toaster]:bg-destructive group-[.toaster]:text-destructive-foreground group-[.toaster]:border-destructive group-[.toaster]:shadow-lg group-[.toaster]:text-xs group-[.toaster]:py-2 group-[.toaster]:px-3",
+          description: "group-[.toast]:text-destructive-foreground/90 group-[.toast]:text-[11px]",
           actionButton:
             "group-[.toast]:bg-background group-[.toast]:text-foreground",
           cancelButton:
-            "group-[.toast]:bg-background/20 group-[.toast]:text-destructive-foreground",
+            "group-[.toast]:bg-background/20 group-[.toaster]:text-destructive-foreground",
         },
       }}
       {...props}

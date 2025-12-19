@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Camera, QrCode, UserCheck, CheckCircle, MapPin, X, BarChart3, Smartphone, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, QrCode, UserCheck, CheckCircle, MapPin, X, BarChart3, Smartphone, AlertCircle, Loader2, Wifi } from 'lucide-react';
 import jsQR from 'jsqr';
 import { childAttendanceApi, MarkAttendanceByCardRequest, MarkAttendanceRequest } from '@/api/childAttendance.api';
 import { useInstituteRole } from '@/hooks/useInstituteRole';
@@ -776,7 +776,9 @@ const QRAttendance = () => {
                  <MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                  <div className="flex-1 min-w-0">
                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">Location</p>
-                   <p className="text-xs text-blue-700 dark:text-blue-300 break-words">{location.address}</p>
+                   <p className="text-xs text-blue-700 dark:text-blue-300 break-words">
+                     {selectedInstitute?.name ? `${selectedInstitute.name} - ` : ''}{location.address}
+                   </p>
                  </div>
                </div>
              )}
@@ -1002,8 +1004,8 @@ const QRAttendance = () => {
       <Dialog open={showMethodDialog} onOpenChange={setShowMethodDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Select Scanning Method</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sky-500">Select Scanning Method</DialogTitle>
+            <DialogDescription className="text-sky-400">
               Choose the type of code you want to scan
             </DialogDescription>
           </DialogHeader>
@@ -1039,6 +1041,23 @@ const QRAttendance = () => {
               <div className="text-left">
                 <div className="font-medium">RFID/NFC</div>
                 <div className="text-sm text-muted-foreground">Scan RFID or NFC tags</div>
+              </div>
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowMethodDialog(false);
+                const instituteId = currentInstituteId || selectedInstitute?.id;
+                if (instituteId) {
+                  navigate(`/institute/${instituteId}/institute-mark-attendance`);
+                }
+              }}
+              variant="outline"
+              className="justify-start h-auto p-4"
+            >
+              <Wifi className="h-8 w-8 mr-3" />
+              <div className="text-left">
+                <div className="font-medium">Institute Card (RFID/NFC)</div>
+                <div className="text-sm text-muted-foreground">Mark attendance using institute RFID cards</div>
               </div>
             </Button>
           </div>

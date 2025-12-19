@@ -616,8 +616,8 @@ const Login = ({
         <div className="w-full max-w-2xl space-y-4 md:space-y-6">
           {/* Logo and Header */}
           <div className="space-y-1 text-center">
-            <div className="flex items-center justify-start gap-4 mb-4 md:mb-6">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-transparent">
+            <div className="flex flex-col items-center justify-center mb-4 md:mb-6">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-transparent mb-2">
                 <img src={surakshaLogo} alt="SurakshaLMS logo" className="w-full h-full object-contain" loading="lazy" />
               </div>
               <span className="text-3xl md:text-4xl font-bold text-foreground">SurakshaLMS</span>

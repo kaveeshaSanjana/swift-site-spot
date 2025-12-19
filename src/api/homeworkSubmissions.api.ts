@@ -6,6 +6,12 @@ export interface HomeworkSubmission {
   id: string;
   homeworkId: string;
   studentId: string;
+
+  // Some API responses provide these flattened student fields
+  studentName?: string;
+  studentEmail?: string;
+  studentImageUrl?: string | null;
+
   submissionDate: string;
   fileUrl?: string;
   teacherCorrectionFileUrl?: string;

@@ -130,25 +130,25 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
 
   return (
     <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-foreground">Add New Organization</h2>
-        <p className="text-sm text-muted-foreground">Enter organization information to create a new record</p>
+      <div className="mb-2">
+        <h2 className="text-base font-semibold text-foreground">Add New Organization</h2>
+        <p className="text-xs text-muted-foreground">Enter organization information</p>
       </div>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
           {/* Row 1: Name & Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Organization Name</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Organization Name</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Enter organization name" 
-                      className="h-9 text-sm"
+                      placeholder="Enter name" 
+                      className="h-8 text-xs"
                       {...field} 
                     />
                   </FormControl>
@@ -161,11 +161,11 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
               control={form.control}
               name="type"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Organization Type</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-9 text-sm">
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                     </FormControl>
@@ -181,19 +181,19 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
           </div>
 
           {/* Row 2: Enrollment Key & Institute */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <FormField
               control={form.control}
               name="enrollmentKey"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">
-                    Enrollment Key {watchType === 'INSTITUTE' ? '*' : '(Optional)'}
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">
+                    Enrollment Key {watchType === 'INSTITUTE' ? '*' : ''}
                   </FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder={watchType === 'INSTITUTE' ? "Enter secret key" : "Optional key"} 
-                      className="h-9 text-sm"
+                      placeholder={watchType === 'INSTITUTE' ? "Secret key" : "Optional"} 
+                      className="h-8 text-xs"
                       {...field} 
                       disabled={watchType !== 'INSTITUTE'}
                     />
@@ -204,12 +204,12 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
             />
 
             {instituteId ? (
-              <FormItem>
-                <FormLabel className="text-sm">Linked Institute</FormLabel>
+              <FormItem className="space-y-1">
+                <FormLabel className="text-xs">Linked Institute</FormLabel>
                 <Input 
                   value={instituteName || instituteId} 
                   disabled 
-                  className="h-9 text-sm bg-muted"
+                  className="h-8 text-xs bg-muted"
                 />
               </FormItem>
             ) : (
@@ -217,12 +217,12 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
                 control={form.control}
                 name="instituteId"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">Institute ID (Optional)</FormLabel>
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Institute ID</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Enter institute ID" 
-                        className="h-9 text-sm"
+                        placeholder="Optional" 
+                        className="h-8 text-xs"
                         {...field} 
                       />
                     </FormControl>
@@ -234,32 +234,28 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
           </div>
 
           {/* Image Upload - Compact */}
-          <div>
-            <FormLabel className="text-sm">Organization Image (Optional)</FormLabel>
-            <div className="mt-1.5">
-              <OrganizationImageUpload
-                currentImageUrl={imageUrl}
-                onImageUpdate={(newImageUrl) => setImageUrl(newImageUrl)}
-                organizationName={form.watch('name')}
-              />
-            </div>
+          <div className="space-y-1">
+            <FormLabel className="text-xs">Image (Optional)</FormLabel>
+            <OrganizationImageUpload
+              currentImageUrl={imageUrl}
+              onImageUpdate={(newImageUrl) => setImageUrl(newImageUrl)}
+              organizationName={form.watch('name')}
+            />
           </div>
 
-          {/* Settings - Compact toggles */}
-          <div className="space-y-2">
+          {/* Settings - Inline compact toggles */}
+          <div className="grid grid-cols-3 gap-2">
             <FormField
               control={form.control}
               name="isPublic"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <FormLabel className="text-sm font-medium">Public Organization</FormLabel>
-                    <p className="text-xs text-muted-foreground">Anyone can view this organization</p>
-                  </div>
+                <FormItem className="flex items-center justify-between rounded border p-2">
+                  <FormLabel className="text-xs font-medium">Public</FormLabel>
                   <FormControl>
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="scale-75"
                     />
                   </FormControl>
                 </FormItem>
@@ -270,15 +266,13 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
               control={form.control}
               name="needEnrollmentVerification"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <FormLabel className="text-sm font-medium">Require Verification</FormLabel>
-                    <p className="text-xs text-muted-foreground">New members need approval to join</p>
-                  </div>
+                <FormItem className="flex items-center justify-between rounded border p-2">
+                  <FormLabel className="text-xs font-medium">Verify</FormLabel>
                   <FormControl>
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="scale-75"
                     />
                   </FormControl>
                 </FormItem>
@@ -289,15 +283,13 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
               control={form.control}
               name="enabledEnrollments"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <FormLabel className="text-sm font-medium">Enable Enrollments</FormLabel>
-                    <p className="text-xs text-muted-foreground">Allow new members to join</p>
-                  </div>
+                <FormItem className="flex items-center justify-between rounded border p-2">
+                  <FormLabel className="text-xs font-medium">Enroll</FormLabel>
                   <FormControl>
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="scale-75"
                     />
                   </FormControl>
                 </FormItem>
@@ -306,11 +298,11 @@ const CreateOrganizationForm = ({ onSuccess, onCancel, instituteId, instituteNam
           </div>
           
           {/* Buttons */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" className="h-10 px-6" onClick={onCancel}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={isLoading}>
+            <Button type="submit" className="h-10 px-6" disabled={isLoading}>
               {isLoading ? 'Creating...' : 'Create Organization'}
             </Button>
           </div>

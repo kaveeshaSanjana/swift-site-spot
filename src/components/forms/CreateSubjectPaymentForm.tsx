@@ -162,7 +162,6 @@ const CreateSubjectPaymentForm: React.FC<CreateSubjectPaymentFormProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PARENTS">Parents</SelectItem>
                   <SelectItem value="STUDENTS">Students</SelectItem>
                 </SelectContent>
               </Select>

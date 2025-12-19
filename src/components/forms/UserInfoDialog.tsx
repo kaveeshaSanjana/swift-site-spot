@@ -38,13 +38,14 @@ const UserInfoDialog: React.FC<UserInfoDialogProps> = ({ open, onClose, user }) 
             </AvatarFallback>
           </Avatar>
           
-          <div className="text-center space-y-2 w-full">
+          <div className="text-center space-y-3 w-full">
             <h3 className="text-xl font-semibold">{user.fullName}</h3>
+            <div className="bg-primary/10 rounded-lg p-3 mx-auto">
+              <p className="text-muted-foreground text-xs uppercase tracking-wide">User ID</p>
+              <p className="font-bold text-lg text-primary">{user.id}</p>
+            </div>
             <p className="text-muted-foreground text-sm">
               User Type: <span className="font-medium text-foreground">{user.userType}</span>
-            </p>
-            <p className="text-muted-foreground text-sm">
-              User ID: <span className="font-medium text-foreground">{user.id}</span>
             </p>
           </div>
         </div>

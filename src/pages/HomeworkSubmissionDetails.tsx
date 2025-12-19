@@ -9,11 +9,25 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AccessControl, UserRole } from '@/utils/permissions';
 import { homeworkSubmissionsApi, type HomeworkSubmission } from '@/api/homeworkSubmissions.api';
 import { homeworkApi, type Homework } from '@/api/homework.api';
-import { FileText, Calendar, User, ExternalLink, RefreshCw, ArrowLeft, Lock, Edit } from 'lucide-react';
+import { FileText, Calendar, User, ExternalLink, RefreshCw, ArrowLeft, Lock, Edit, Eye } from 'lucide-react';
 import { useInstituteRole } from '@/hooks/useInstituteRole';
 import AppLayout from '@/components/layout/AppLayout';
 import UploadCorrectionDialog from '@/components/forms/UploadCorrectionDialog';
-import MUITable from '@/components/ui/mui-table';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
+
+interface Column {
+  id: string;
+  label: string;
+  minWidth?: number;
+  align?: 'right' | 'left' | 'center';
+}
 
 const HomeworkSubmissionDetails = () => {
   const { instituteId, classId, subjectId, homeworkId } = useParams<{ 
@@ -28,6 +42,7 @@ const HomeworkSubmissionDetails = () => {
   const instituteRole = useInstituteRole();
   const [homework, setHomework] = useState<Homework | null>(null);
   const [submissions, setSubmissions] = useState<HomeworkSubmission[]>([]);
+  const [totalSubmissions, setTotalSubmissions] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHomework, setIsLoadingHomework] = useState(false);
   const [correctionDialogOpen, setCorrectionDialogOpen] = useState(false);
@@ -36,6 +51,8 @@ const HomeworkSubmissionDetails = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewSubmission, setViewSubmission] = useState<HomeworkSubmission | null>(null);
+  const [remarkDialogOpen, setRemarkDialogOpen] = useState(false);
+  const [selectedRemark, setSelectedRemark] = useState<string>('');
 
   const loadHomework = async () => {
     if (!homeworkId) return;
@@ -56,19 +73,26 @@ const HomeworkSubmissionDetails = () => {
     }
   };
 
-  const loadSubmissions = async () => {
+  const loadSubmissions = async (pageNumber = 1, limit = rowsPerPage) => {
     if (!homeworkId) return;
 
     setIsLoading(true);
     try {
-      const response = await homeworkSubmissionsApi.getSubmissions({
-        homeworkId: homeworkId,
-        page: 1,
-        limit: 50,
-      }, true);
+      const response = await homeworkSubmissionsApi.getSubmissions(
+        {
+          page: pageNumber,
+          limit,
+          homeworkId,
+        },
+        true
+      );
 
       const submissionsList = Array.isArray(response) ? response : response.data || [];
+      const meta = Array.isArray(response) ? undefined : response.meta;
+
       setSubmissions(submissionsList);
+      setTotalSubmissions(meta?.total ?? submissionsList.length);
+      setPage(pageNumber - 1);
     } catch (error) {
       console.error('Error loading submissions:', error);
       toast({
@@ -84,7 +108,7 @@ const HomeworkSubmissionDetails = () => {
   useEffect(() => {
     if (homeworkId) {
       loadHomework();
-      loadSubmissions();
+      // Don't auto-load submissions - user must click Load Data button
     }
   }, [homeworkId]);
 
@@ -104,10 +128,9 @@ const HomeworkSubmissionDetails = () => {
   };
 
   const handleCorrectionSuccess = () => {
-    loadSubmissions(); // Refresh submissions to show the new correction file
+    loadSubmissions();
   };
 
-  // Check if user can upload corrections (InstituteAdmin or Teacher only)
   const canUploadCorrections = ['InstituteAdmin', 'Teacher'].includes(instituteRole);
 
   const handleViewDetails = (submission: HomeworkSubmission) => {
@@ -115,70 +138,30 @@ const HomeworkSubmissionDetails = () => {
     setViewDialogOpen(true);
   };
 
-  // MUI table columns for submissions
-  const submissionColumns: {
-    id: string;
-    label: string;
-    minWidth?: number;
-    align?: 'right' | 'left' | 'center';
-    format?: (value: any, row?: any) => React.ReactNode;
-  }[] = [
-    {
-      id: 'studentId',
-      label: 'Student ID',
-      minWidth: 120,
-      format: (val) => val || '-',
-    },
-    {
-      id: 'submissionDate',
-      label: 'Submission Date',
-      minWidth: 170,
-      format: (val) => formatDate(val),
-    },
-    {
-      id: 'fileUrl',
-      label: 'File URL',
-      minWidth: 150,
-      format: (val) => val ? (
-        <Button 
-          size="sm" 
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={() => window.open(val, '_blank')}
-        >
-          HW File
-        </Button>
-      ) : '-',
-    },
-    {
-      id: 'teacherCorrectionFileUrl',
-      label: 'Correction URL',
-      minWidth: 150,
-      format: (val) => val ? (
-        <Button 
-          size="sm" 
-          className="bg-yellow-600 hover:bg-yellow-700 text-white"
-          onClick={() => window.open(val, '_blank')}
-        >
-          Correction File
-        </Button>
-      ) : '-',
-    },
-    {
-      id: 'remarks',
-      label: 'Remarks',
-      minWidth: 220,
-      format: (val) => val ? <span className="line-clamp-2">{val}</span> : '-',
-    },
-    {
-      id: 'isActive',
-      label: 'Status',
-      minWidth: 100,
-      format: (val) => (
-        <Badge variant={val ? 'default' : 'secondary'}>
-          {val ? 'Active' : 'Inactive'}
-        </Badge>
-      ),
-    },
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+    void loadSubmissions(newPage + 1, rowsPerPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const next = +event.target.value;
+    setRowsPerPage(next);
+    setPage(0);
+    void loadSubmissions(1, next);
+  };
+
+  const columns: Column[] = [
+    { id: 'id', label: 'ID', minWidth: 80 },
+    { id: 'studentId', label: 'Student ID', minWidth: 100 },
+    { id: 'studentName', label: 'Student Name', minWidth: 150 },
+    { id: 'submissionDate', label: 'Submission Date', minWidth: 150 },
+    { id: 'remarks', label: 'Remarks', minWidth: 100, align: 'center' },
+    { id: 'fileUrl', label: 'Submission', minWidth: 120, align: 'center' },
+    { id: 'correctionUrl', label: 'Correction', minWidth: 120, align: 'center' },
+    { id: 'isActive', label: 'Status', minWidth: 100 },
+    { id: 'createdAt', label: 'Created At', minWidth: 150 },
+    { id: 'updatedAt', label: 'Updated At', minWidth: 150 },
+    ...(canUploadCorrections ? [{ id: 'actions', label: 'Actions', minWidth: 120, align: 'center' as const }] : []),
   ];
 
   // Check if user has permission to view homework submissions (institute-specific)
@@ -285,9 +268,9 @@ const HomeworkSubmissionDetails = () => {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="sm"
-                  onClick={loadSubmissions}
+                  onClick={() => void loadSubmissions(1, rowsPerPage)}
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -298,9 +281,18 @@ const HomeworkSubmissionDetails = () => {
                   ) : (
                     <>
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
+                      Load Data
                     </>
                   )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void loadSubmissions(page + 1, rowsPerPage)}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh
                 </Button>
               </div>
             </div>
@@ -318,30 +310,117 @@ const HomeworkSubmissionDetails = () => {
                 <p className="text-muted-foreground">No students have submitted this homework yet.</p>
               </div>
             ) : (
-              <MUITable
-                title="Homework Submissions"
-                columns={submissionColumns}
-                data={submissions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-                page={page}
-                rowsPerPage={rowsPerPage}
-                totalCount={submissions.length}
-                onPageChange={(newPage) => setPage(newPage)}
-                onRowsPerPageChange={(newRows) => { setRowsPerPage(newRows); setPage(0); }}
-                rowsPerPageOptions={[10, 25, 50, 100]}
-                sectionType="homework"
-                onView={(row: HomeworkSubmission) => handleViewDetails(row)}
-                customActions={
-                  canUploadCorrections
-                    ? [{
-                        label: 'Correction',
-                        action: (row: HomeworkSubmission) => handleCorrectionClick(row),
-                        icon: <Edit className="h-3 w-3" />,
-                        variant: 'outline' as const,
-                        className: 'border-red-600 text-red-600 hover:bg-red-600 hover:text-white',
-                      }]
-                    : []
-                }
-              />
+              <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <TableContainer sx={{ maxHeight: 600 }}>
+                  <Table stickyHeader aria-label="homework submissions table">
+                    <TableHead>
+                      <TableRow>
+                        {columns.map((column) => (
+                          <TableCell
+                            key={column.id}
+                            align={column.align}
+                            style={{ minWidth: column.minWidth }}
+                            sx={{
+                              fontWeight: 600,
+                              backgroundColor: 'hsl(var(--muted))',
+                              color: 'hsl(var(--foreground))',
+                              borderBottom: '1px solid hsl(var(--border))'
+                            }}
+                          >
+                            {column.label}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {submissions.map((row) => (
+                          <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
+                            <TableCell>{row.id}</TableCell>
+                            <TableCell>{row.studentId || '-'}</TableCell>
+                            <TableCell>
+                              {row.studentName || `${row.student?.firstName || ''} ${row.student?.lastName || ''}`.trim() || '-'}
+                            </TableCell>
+                            <TableCell>{formatDate(row.submissionDate)}</TableCell>
+                            <TableCell align="center">
+                              {row.remarks ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedRemark(row.remarks || '');
+                                    setRemarkDialogOpen(true);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              {row.fileUrl ? (
+                                <Button
+                                  size="sm"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  onClick={() => window.open(row.fileUrl, '_blank')}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              {row.teacherCorrectionFileUrl ? (
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => window.open(row.teacherCorrectionFileUrl, '_blank')}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={row.isActive ? 'default' : 'secondary'}>
+                                {row.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(row.createdAt)}</TableCell>
+                            <TableCell>{formatDate(row.updatedAt)}</TableCell>
+                            {canUploadCorrections && (
+                              <TableCell align="center">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                                  onClick={() => handleCorrectionClick(row)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Correction
+                                </Button>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  component="div"
+                  count={totalSubmissions}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </Paper>
             )}
           </CardContent>
         </Card>
@@ -365,7 +444,7 @@ const HomeworkSubmissionDetails = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Student Name</label>
-                    <p className="mt-1">{viewSubmission.student?.firstName} {viewSubmission.student?.lastName}</p>
+                    <p className="mt-1">{viewSubmission.studentName || `${viewSubmission.student?.firstName || ''} ${viewSubmission.student?.lastName || ''}`.trim() || '-'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Status</label>
@@ -401,6 +480,18 @@ const HomeworkSubmissionDetails = () => {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Remark Dialog */}
+        <Dialog open={remarkDialogOpen} onOpenChange={setRemarkDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Teacher Note</DialogTitle>
+            </DialogHeader>
+            <div className="p-4 bg-muted/50 rounded-md">
+              <p className="whitespace-pre-wrap">{selectedRemark || 'No remarks'}</p>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Correction Upload Dialog */}
         {selectedSubmission && (

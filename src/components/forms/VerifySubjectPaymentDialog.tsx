@@ -70,7 +70,7 @@ const VerifySubjectPaymentDialog = ({ open, onOpenChange, submission, onVerify }
             </div>
             <div className="flex items-center space-x-2">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span><strong>Amount:</strong> ₹{submission.submittedAmount ? parseFloat(submission.submittedAmount.toString()).toLocaleString() : '0'}</span>
+              <span><strong>Amount:</strong> Rs {submission.submittedAmount ? parseFloat(submission.submittedAmount.toString()).toLocaleString() : '0'}</span>
             </div>
             <div className="flex items-center space-x-2">
               <FileText className="h-4 w-4 text-muted-foreground" />

@@ -85,7 +85,7 @@ const VerifySubmissionDialog = ({ open, onOpenChange, submission, instituteId, o
           <h3 className="font-semibold mb-2">Submission Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
             <p><strong>Submission ID:</strong> {submission.id}</p>
-            <p><strong>Amount:</strong> ₹{parseFloat((submission as any).paymentAmount || (submission as any).submittedAmount || '0').toLocaleString()}</p>
+            <p><strong>Amount:</strong> Rs {parseFloat((submission as any).paymentAmount || (submission as any).submittedAmount || '0').toLocaleString()}</p>
             <p><strong>Student:</strong> {(submission as any).studentName || (submission as any).username || '-'}</p>
             <p><strong>Transaction Ref:</strong> {(submission as any).transactionRef || (submission as any).transactionId || '-'}</p>
             <p><strong>Payment Method:</strong> {(submission as any).paymentMethod || '-'}</p>

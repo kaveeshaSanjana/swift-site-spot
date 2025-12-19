@@ -132,7 +132,7 @@ const CreateExamForm = ({ onClose, onSuccess }: CreateExamFormProps) => {
       console.error('Error creating exam:', error);
       toast({
         title: "Creation Failed",
-        description: error?.response?.data?.message || "Failed to create exam.",
+        description: error?.message || "Failed to create exam.",
         variant: "destructive"
       });
     } finally {

@@ -240,7 +240,7 @@ const StudentSubmissionsDialog = ({
         </div>
         <div className="text-right">
           <p className="text-xl font-bold">
-            ₹{parseFloat(submission.submittedAmount).toLocaleString()}
+            Rs {parseFloat(submission.submittedAmount).toLocaleString()}
           </p>
           <p className="text-sm text-muted-foreground">
             {submission.paymentPreview.priority}

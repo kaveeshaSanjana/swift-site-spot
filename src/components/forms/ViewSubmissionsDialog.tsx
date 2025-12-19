@@ -110,7 +110,7 @@ const ViewSubmissionsDialog = ({ open, onOpenChange, payment, instituteId }: Vie
           {payment && (
             <div className="text-sm text-muted-foreground">
               <p><strong>Payment:</strong> {payment.paymentType}</p>
-              <p><strong>Amount:</strong> ₹{payment.amount.toLocaleString()}</p>
+              <p><strong>Amount:</strong> Rs {payment.amount.toLocaleString()}</p>
               <p><strong>Due Date:</strong> {new Date(payment.dueDate).toLocaleDateString()}</p>
             </div>
           )}
@@ -200,7 +200,7 @@ const ViewSubmissionsDialog = ({ open, onOpenChange, payment, instituteId }: Vie
                         </div>
                         <div className="text-right">
                           <p className="text-xl font-bold">
-                            ₹{submission.submittedAmount.toLocaleString()}
+                            Rs {submission.submittedAmount.toLocaleString()}
                           </p>
                         </div>
                       </div>

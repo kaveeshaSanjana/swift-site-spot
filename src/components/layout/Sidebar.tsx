@@ -4,7 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInstituteRole } from '@/hooks/useInstituteRole';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { extractPageFromUrl, buildSidebarUrl } from '@/utils/pageNavigation';
+import { extractPageFromUrl, buildSidebarUrl, getSidebarHighlightPage } from '@/utils/pageNavigation';
 import { AccessControl } from '@/utils/permissions';
 import {
   LayoutDashboard,
@@ -51,8 +51,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Derive current page from URL
+  // Derive current page from URL (for component rendering)
   const currentPage = React.useMemo(() => extractPageFromUrl(location.pathname), [location.pathname]);
+  
+  // Get sidebar highlight page (maps sub-pages to parent for highlighting)
+  const sidebarHighlightPage = React.useMemo(() => getSidebarHighlightPage(location.pathname), [location.pathname]);
   
   // Broadcast collapse state to the app (for responsive grids)
   React.useEffect(() => {
@@ -369,13 +372,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             permission: 'view-students',
             alwaysShow: false
           },
-          {
-            id: 'parents',
-            label: 'Parents',
-            icon: Users,
-            permission: 'view-parents',
-            alwaysShow: false
-          },
         ];
       }
 
@@ -401,13 +397,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             label: 'Students',
             icon: GraduationCap,
             permission: 'view-students',
-            alwaysShow: false
-          },
-          {
-            id: 'parents',
-            label: 'Parents',
-            icon: Users,
-            permission: 'view-parents',
             alwaysShow: false
           },
           {
@@ -483,13 +472,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             alwaysShow: false
           },
           {
-            id: 'parents',
-            label: 'Parents',
-            icon: Users,
-            permission: 'view-parents',
-            alwaysShow: false
-          },
-          {
             id: 'classes',
             label: 'All Classes',
             icon: School,
@@ -545,13 +527,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             alwaysShow: false
           },
           {
-            id: 'parents',
-            label: 'Parents',
-            icon: Users,
-            permission: 'view-parents',
-            alwaysShow: false
-          },
-          {
             id: 'subjects',
             label: 'All Subjects',
             icon: BookOpen,
@@ -583,13 +558,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             label: 'Students',
             icon: GraduationCap,
             permission: 'view-students',
-            alwaysShow: false
-          },
-          {
-            id: 'parents',
-            label: 'Parents',
-            icon: Users,
-            permission: 'view-parents',
             alwaysShow: false
           },
           // Hide "All Subjects" when a subject is selected
@@ -950,14 +918,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             icon: QrCode,
             permission: 'mark-attendance',
             alwaysShow: false
-          },
-          ...(selectedInstitute && ['InstituteAdmin', 'AttendanceMarker', 'Teacher'].includes(userRole) ? [{
-            id: 'institute-mark-attendance',
-            label: 'Institute Mark Attendance',
-            icon: Wifi,
-            permission: 'mark-attendance',
-            alwaysShow: false
-          }] : [])
+          }
         ];
       }
 
@@ -977,14 +938,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             icon: QrCode,
             permission: 'mark-attendance',
             alwaysShow: false
-          },
-          ...(selectedInstitute && ['InstituteAdmin', 'AttendanceMarker', 'Teacher'].includes(userRole) ? [{
-            id: 'institute-mark-attendance',
-            label: 'Institute Mark Attendance',
-            icon: Wifi,
-            permission: 'mark-attendance',
-            alwaysShow: false
-          }] : [])
+          }
         ];
       }
 
@@ -1014,14 +968,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             icon: QrCode,
             permission: 'mark-attendance',
             alwaysShow: false
-          },
-          ...(selectedInstitute && ['InstituteAdmin', 'AttendanceMarker', 'Teacher'].includes(userRole) ? [{
-            id: 'institute-mark-attendance',
-            label: 'Institute Mark Attendance',
-            icon: Wifi,
-            permission: 'mark-attendance',
-            alwaysShow: false
-          }] : [])
+          }
         ];
       }
 
@@ -1041,14 +988,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             icon: QrCode,
             permission: 'mark-attendance',
             alwaysShow: false
-          },
-          ...(selectedInstitute && ['InstituteAdmin', 'AttendanceMarker', 'Teacher'].includes(userRole) ? [{
-            id: 'institute-mark-attendance',
-            label: 'Institute Mark Attendance',
-            icon: Wifi,
-            permission: 'mark-attendance',
-            alwaysShow: false
-          }] : [])
+          }
         ];
       }
     }
@@ -1075,14 +1015,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         icon: QrCode,
         permission: 'mark-attendance',
         alwaysShow: userRole === 'AttendanceMarker' // Always show for AttendanceMarker
-      },
-      ...(selectedInstitute && ['InstituteAdmin', 'AttendanceMarker', 'Teacher'].includes(userRole) ? [{
-        id: 'institute-mark-attendance',
-        label: 'Institute Mark Attendance',
-        icon: Wifi,
-        permission: 'mark-attendance',
-        alwaysShow: false
-      }] : [])
+      }
     ];
 
     return attendanceItems;
@@ -1572,7 +1505,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     paymentItemsDisplay,
     smsItemsDisplay,
     settingsItemsDisplay
-  ].some(list => list.some(i => i.id === currentPage));
+  ].some(list => list.some(i => i.id === sidebarHighlightPage));
 
   if (!activeExists && currentPage) {
     // Don't auto-add sub-routes (pages with / in them) to sidebar
@@ -1697,7 +1630,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return (
       <div className="mb-4 sm:mb-6">
         {!isCollapsed && (
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
             {title}
           </h3>
         )}
@@ -1705,11 +1638,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           {filteredItems.map((item) => (
             <Button
               key={item.id}
-              variant={currentPage === item.id ? "secondary" : "ghost"}
+              variant={sidebarHighlightPage === item.id ? "secondary" : "ghost"}
               className={`w-full ${isCollapsed ? 'justify-center px-2' : 'justify-start px-3'} h-9 sm:h-10 text-sm ${
-                currentPage === item.id 
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 border-r-2 border-blue-600' 
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                sidebarHighlightPage === item.id 
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500' 
+                  : 'text-foreground/70 hover:bg-muted hover:text-foreground'
               }`}
               onClick={() => handleItemClick(item.id)}
             >
@@ -1744,23 +1677,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
           {!isCollapsed && (
-            <div className="flex items-center space-x-2 min-w-0">
-              {selectedInstitute?.logo ? (
-                <img 
-                  src={selectedInstitute.logo} 
-                  alt="Institute logo"
-                  className="h-12 w-12 object-contain rounded flex-shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <img 
-                  src={surakshaLogoSidebar} 
-                  alt="SurakshaLMS logo"
-                  className="h-12 w-12 object-contain rounded flex-shrink-0"
-                />
-              )}
+            <div className="flex items-center justify-start space-x-2 min-w-0 flex-1">
+              <img 
+                src={selectedInstitute?.logo || surakshaLogoSidebar} 
+                alt={selectedInstitute?.logo ? "Institute logo" : "SurakshaLMS logo"}
+                className="h-12 w-12 object-contain rounded flex-shrink-0"
+              />
               <span className="font-bold text-base sm:text-lg text-gray-900 dark:text-white truncate">
                 {selectedInstitute?.shortName || 'SurakshaLMS'}
               </span>
@@ -1788,7 +1710,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
         {/* Context Info - Child-only on child routes, otherwise full context like before */}
         {!isCollapsed && (currentPage.startsWith('child/:childId/') && selectedChild ? (
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-border">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Current Selection</span>
               <Button variant="ghost" size="sm" onClick={handleBackNavigation} className="h-6 w-6 p-0 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800" aria-label="Go Back">
@@ -1804,7 +1726,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           </div>
         ) : (
           user?.role !== 'SystemAdmin' && (selectedInstitute || selectedClass || selectedSubject || selectedChild || selectedOrganization || selectedTransport) && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-border">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Current Selection</span>
                 <Button variant="ghost" size="sm" onClick={handleBackNavigation} className="h-6 w-6 p-0 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800" aria-label="Go Back">

@@ -142,7 +142,7 @@ const PaymentSubmissionsDialog: React.FC<PaymentSubmissionsDialogProps> = ({
                         </div>
                         <div className="text-left sm:text-right">
                           <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100">
-                            ₹{parseFloat(submission.paymentAmount.toString()).toLocaleString()}
+                            Rs {parseFloat(submission.paymentAmount.toString()).toLocaleString()}
                           </p>
                         </div>
                       </div>

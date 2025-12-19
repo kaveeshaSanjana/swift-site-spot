@@ -146,7 +146,7 @@ const AssignParentByPhoneForm: React.FC<AssignParentByPhoneFormProps> = ({
       console.error('Error assigning parent:', error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || error.message || "Failed to assign parent.",
+        description: error?.message || "Failed to assign parent.",
         variant: "destructive"
       });
     }

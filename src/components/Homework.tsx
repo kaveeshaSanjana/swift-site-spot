@@ -281,9 +281,20 @@ const Homework = ({ apiLevel = 'institute' }: HomeworkProps) => {
   const isStudent = instituteRole === 'Student';
 
   const homeworkColumns = [
+    { key: 'id', header: 'ID', render: (value: any) => value || 'N/A' },
     { key: 'title', header: 'Title' },
     { key: 'description', header: 'Description' },
-    { key: 'teacher', header: 'Teacher', render: (value: any) => value?.name || 'N/A' },
+    { 
+      key: 'teacher', 
+      header: 'Teacher', 
+      render: (value: any) => value ? (
+        <div className="flex flex-col gap-0.5">
+          <span className="font-medium">{value.name || 'N/A'}</span>
+          {value.phone && <span className="text-xs text-muted-foreground">{value.phone}</span>}
+          {value.email && <span className="text-xs text-muted-foreground">{value.email}</span>}
+        </div>
+      ) : 'N/A'
+    },
     { key: 'startDate', header: 'Start Date', render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A' },
     { key: 'endDate', header: 'End Date', render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A' },
     ...((['InstituteAdmin', 'Teacher', 'Student'] as UserRole[]).includes(instituteRole) ? [{
@@ -309,7 +320,7 @@ const Homework = ({ apiLevel = 'institute' }: HomeworkProps) => {
       render: (value: any, row: any) => (
         <Button
           size="sm"
-          variant="outline"
+          variant="default"
           onClick={() => handleViewSubmissions(row)}
         >
           <Users className="h-3 w-3 mr-1" />

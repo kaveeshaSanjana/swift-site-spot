@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CreditCard, ArrowLeft, Download, Search, BookOpen, Eye, CheckCircle, Clock, FileText, History, Shield, Plus, RefreshCw } from 'lucide-react';
+import { CreditCard, ArrowLeft, Download, Search, BookOpen, Eye, CheckCircle, Clock, FileText, History, Shield, Plus, RefreshCw, XCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInstituteRole } from '@/hooks/useInstituteRole';
 import { useNavigate } from 'react-router-dom';
@@ -45,6 +45,7 @@ const SubjectPayments = () => {
   const [submitPaymentDialogOpen, setSubmitPaymentDialogOpen] = useState(false);
   const [selectedPaymentForSubmission, setSelectedPaymentForSubmission] = useState<SubjectPayment | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mySubmissionsMap, setMySubmissionsMap] = useState<Record<string, { status: string; id: string }>>({});
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -63,6 +64,38 @@ const SubjectPayments = () => {
     }
   }, [contextKey]);
 
+  // Load my submissions to get status for each payment
+  const loadMySubmissions = async () => {
+    if (!selectedInstitute || !selectedClass || !selectedSubject || instituteRole !== 'Student') return;
+    
+    try {
+      const response = await subjectPaymentsApi.getMySubjectSubmissions(
+        selectedInstitute.id, 
+        selectedClass.id, 
+        selectedSubject.id,
+        1,
+        100
+      );
+      
+      // Create a map of paymentId -> submission status
+      const submissionsMap: Record<string, { status: string; id: string }> = {};
+      if (response.data && Array.isArray(response.data)) {
+        response.data.forEach((submission: any) => {
+          const paymentId = submission.paymentId || submission.paymentPreview?.id;
+          if (paymentId) {
+            submissionsMap[paymentId] = { 
+              status: submission.status, 
+              id: submission.id 
+            };
+          }
+        });
+      }
+      setMySubmissionsMap(submissionsMap);
+    } catch (error) {
+      console.error('Failed to load my submissions:', error);
+    }
+  };
+
   // Load subject payments based on user role
   const loadSubjectPayments = async (pageNum: number = page, limitNum: number = rowsPerPage, forceRefresh: boolean = false) => {
     if (!selectedInstitute || !selectedClass || !selectedSubject) {
@@ -79,6 +112,8 @@ const SubjectPayments = () => {
       if (instituteRole === 'Student') {
         // For students, use my-payments endpoint
         response = await subjectPaymentsApi.getMySubjectPayments(selectedInstitute.id, selectedClass.id, selectedSubject.id, pageNum + 1, limitNum, forceRefresh);
+        // Also load submissions to get status
+        await loadMySubmissions();
       } else if (instituteRole === 'InstituteAdmin' || instituteRole === 'Teacher') {
         // For admins and teachers, use regular endpoint
         response = await subjectPaymentsApi.getSubjectPayments(selectedInstitute.id, selectedClass.id, selectedSubject.id, pageNum + 1, limitNum, forceRefresh);
@@ -312,7 +347,7 @@ const SubjectPayments = () => {
         </Card>}
 
       {/* Subject Payments Table */}
-      {!loading && <Card className="mx-auto max-w-5xl w-full">
+      {!loading && <Card className="w-full">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -418,19 +453,22 @@ const SubjectPayments = () => {
                               {instituteRole === 'Student' && (
                                 <TableCell>
                                   {(() => {
-                                    const hasSubmitted = payment.hasSubmitted || payment.mySubmissionStatus;
+                                    const submissionData = mySubmissionsMap[payment.id];
+                                    const hasSubmitted = submissionData || payment.hasSubmitted || payment.mySubmissionStatus;
+                                    const status = submissionData?.status || payment.mySubmissionStatus;
+                                    
                                     if (!hasSubmitted) {
-                                      return <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-400">Not Submitted</Badge>;
+                                      return <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300">Not Submitted</Badge>;
                                     }
-                                    switch (payment.mySubmissionStatus) {
+                                    switch (status) {
                                       case 'VERIFIED':
-                                        return <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400">Verified</Badge>;
+                                        return <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="h-3 w-3 mr-1" />Verified</Badge>;
                                       case 'PENDING':
-                                        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</Badge>;
+                                        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
                                       case 'REJECTED':
-                                        return <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400">Rejected</Badge>;
+                                        return <Badge className="bg-red-100 text-red-800 border-red-200"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
                                       default:
-                                        return <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400">Submitted</Badge>;
+                                        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Submitted</Badge>;
                                     }
                                   })()}
                                 </TableCell>
@@ -455,13 +493,43 @@ const SubjectPayments = () => {
                               )}
                               <TableCell>
                                 <div className="flex flex-col space-y-1">
-                                  {instituteRole === 'Student' && <Button variant="default" size="sm" onClick={() => {
-                          setSelectedPaymentForSubmission(payment);
-                          setSubmitPaymentDialogOpen(true);
-                        }} className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white">
-                                      <CreditCard className="h-3 w-3" />
-                                      <span>Submit</span>
-                                    </Button>}
+                                  {instituteRole === 'Student' && (
+                                    (() => {
+                                      const submissionData = mySubmissionsMap[payment.id];
+                                      const hasSubmitted = submissionData || payment.hasSubmitted || payment.mySubmissionStatus;
+                                      const status = submissionData?.status || payment.mySubmissionStatus;
+                                      
+                                      if (hasSubmitted) {
+                                        return (
+                                          <Badge 
+                                            className={
+                                              status === 'VERIFIED' 
+                                                ? "bg-green-100 text-green-800 border-green-200"
+                                                : status === 'PENDING'
+                                                ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                                : status === 'REJECTED'
+                                                ? "bg-red-100 text-red-800 border-red-200"
+                                                : "bg-blue-100 text-blue-800 border-blue-200"
+                                            }
+                                          >
+                                            {status === 'VERIFIED' && <CheckCircle className="h-3 w-3 mr-1" />}
+                                            {status === 'PENDING' && <Clock className="h-3 w-3 mr-1" />}
+                                            {status === 'REJECTED' && <XCircle className="h-3 w-3 mr-1" />}
+                                            Already Submitted
+                                          </Badge>
+                                        );
+                                      }
+                                      return (
+                                        <Button variant="default" size="sm" onClick={() => {
+                                          setSelectedPaymentForSubmission(payment);
+                                          setSubmitPaymentDialogOpen(true);
+                                        }} className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white">
+                                          <CreditCard className="h-3 w-3" />
+                                          <span>Submit</span>
+                                        </Button>
+                                      );
+                                    })()
+                                  )}
                                   
                                   {(instituteRole === 'InstituteAdmin' || instituteRole === 'Teacher') && <Button variant="default" size="sm" onClick={() => viewSubmissions(payment)} className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white">
                                       <Eye className="h-3 w-3" />

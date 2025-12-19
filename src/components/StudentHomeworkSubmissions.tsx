@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, FileText, Eye, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, FileText, Eye, Calendar, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { homeworkSubmissionsApi, HomeworkSubmission } from '@/api/homeworkSubmissions.api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import MUITable from '@/components/ui/mui-table';
 import { usePagination } from '@/hooks/usePagination';
-
 const StudentHomeworkSubmissions = () => {
   const [submissions, setSubmissions] = useState<HomeworkSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,10 +131,23 @@ const StudentHomeworkSubmissions = () => {
   }, {
     id: 'remarks',
     label: 'Remarks',
-    minWidth: 200,
-    format: (value: any, row: HomeworkSubmission) => row.remarks ? <div className="p-2 bg-muted rounded text-sm line-clamp-2">
-            {row.remarks}
-          </div> : '-'
+    minWidth: 120,
+    format: (value: any, row: HomeworkSubmission) => row.remarks ? (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm">
+            <MessageSquare className="h-4 w-4 mr-1" />
+            View
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64">
+          <div className="space-y-2">
+            <h4 className="font-semibold text-sm">Teacher Notes</h4>
+            <p className="text-sm">{row.remarks}</p>
+          </div>
+        </PopoverContent>
+      </Popover>
+    ) : <span className="text-muted-foreground">-</span>
   }];
   const customActions = [...(filteredSubmissions.some(s => s.teacherCorrectionFileUrl) ? [{
     label: 'View Correction',

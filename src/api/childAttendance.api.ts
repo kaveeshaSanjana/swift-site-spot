@@ -190,7 +190,8 @@ class ChildAttendanceApi {
     const response = await fetch(fullApiUrl, {
       method: 'POST',
       headers: getApiHeaders(),
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      credentials: 'include' // CRITICAL: Send httpOnly refresh token cookie for JWT auth
     });
 
     if (!response.ok) {
@@ -259,7 +260,8 @@ class ChildAttendanceApi {
     const response = await fetch(fullApiUrl, {
       method: 'POST',
       headers: getApiHeaders(),
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      credentials: 'include' // CRITICAL: Send httpOnly refresh token cookie for JWT auth
     });
 
     if (!response.ok) {

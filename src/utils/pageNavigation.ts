@@ -103,7 +103,7 @@ export const useContextUrlSync = (currentPage: string) => {
 };
 
 /**
- * Extract page name from context URL
+ * Extract page name from context URL (for component rendering)
  */
 export const extractPageFromUrl = (pathname: string): string => {
   // Remove leading slash
@@ -138,8 +138,7 @@ export const extractPageFromUrl = (pathname: string): string => {
     return 'exams'; // Map to parent for sidebar highlighting
   }
   
-  // Map sub-routes to their parent pages (for sidebar highlighting only)
-  // NOTE: rfid-attendance removed - it needs to return its own page name for rendering
+  // Map sub-routes to their parent pages (for sidebar highlighting only - NOT for component rendering)
   const subRouteMap: Record<string, string> = {
     'system-payments/create': 'system-payment',
     'payment-submissions': 'system-payment',
@@ -161,8 +160,24 @@ export const extractPageFromUrl = (pathname: string): string => {
     return urlToPageMap[path];
   }
   
-  // If empty, return dashboard
+  // If empty (just subject context with no page), return dashboard
   return path || 'dashboard';
+};
+
+/**
+ * Get sidebar highlight page (maps sub-pages to their parent menu items)
+ */
+export const getSidebarHighlightPage = (pathname: string): string => {
+  const basePage = extractPageFromUrl(pathname);
+  
+  // Map pages to their sidebar parent for highlighting
+  const sidebarParentMap: Record<string, string> = {
+    'rfid-attendance': 'qr-attendance',
+    'institute-mark-attendance': 'qr-attendance',
+    'select-institute': 'dashboard', // Highlight 'Select Institutes' (dashboard) when on select-institute page
+  };
+  
+  return sidebarParentMap[basePage] || basePage;
 };
 
 /**
@@ -258,7 +273,12 @@ export const buildSidebarUrl = (
         }
       }
       
-      if (page !== 'dashboard') url += `/${pagePath}`;
+      // Always append /dashboard for dashboard page when context is present
+      if (page === 'dashboard') {
+        url += '/dashboard';
+      } else {
+        url += `/${pagePath}`;
+      }
     }
   } else {
     url = `/${pagePath}`;
@@ -270,6 +290,7 @@ export const buildSidebarUrl = (
 export default {
   useContextUrlSync,
   extractPageFromUrl,
+  getSidebarHighlightPage,
   parseContextIds,
   buildSidebarUrl
 };

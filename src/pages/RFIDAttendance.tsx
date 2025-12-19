@@ -181,13 +181,7 @@ const RfidAttendance = () => {
           imageUrl: imageUrl || undefined,
         });
 
-        toast({
-          title: status === 'present' ? 'Attendance Marked ✓' : 'Attendance Marked',
-          description: `${studentName} - ${status.toUpperCase()} - ${dateStr} ${timeStr}`,
-          isAttendanceAlert: true,
-          imageUrl: imageUrl,
-          status: status,
-        });
+        // RFID attendance shows visual feedback in scanner section, no toast needed
         setRfidCardId('');
         setScannerStatus('Attendance Marked Successfully');
         inputRef.current?.focus();
@@ -257,62 +251,122 @@ const RfidAttendance = () => {
                 {location && (
                   <p className="text-sm flex items-start gap-1">
                     <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground">{location}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedInstitute?.name ? `${selectedInstitute.name} - ` : ''}{location}
+                    </span>
                   </p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-muted">
-            <CardContent className="p-12 sm:p-16">
-              <div className="flex flex-col items-center justify-center space-y-6">
-                <div className="relative">
-                  {lastAttendance ? (
-                    <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" strokeWidth={2.5} />
-                  ) : (
-                    <Wifi className="h-12 w-12 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
-                  )}
-                </div>
-
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-semibold text-foreground">
-                    {scannerStatus}
-                  </h2>
-                  {lastAttendance ? (
-                    <div className="space-y-3 flex flex-col items-center">
-                      {lastAttendance.imageUrl && (
-                        <img
-                          src={lastAttendance.imageUrl}
-                          alt={`${lastAttendance.studentName} photo`}
-                          className="h-20 w-20 rounded-full object-cover ring-2 ring-primary/30 shadow-md"
-                          loading="lazy"
-                        />
-                      )}
-                      <p className="text-lg font-medium text-green-600 dark:text-green-400">
-                        {lastAttendance.studentName}
-                      </p>
-                      <p className={`text-base font-semibold ${
-                        lastAttendance.status === 'present' 
-                          ? 'text-green-600 dark:text-green-400' 
+          {/* Modern Scanner Section */}
+          <Card className="border-0 shadow-xl overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 bg-grid opacity-30" />
+                
+                <div className="relative flex flex-col items-center justify-center py-16 sm:py-24 px-8">
+                  {/* Large Icon Container */}
+                  <div className="relative mb-8">
+                    <div className={`absolute -inset-4 rounded-full blur-2xl transition-all duration-500 ${
+                      lastAttendance 
+                        ? lastAttendance.status === 'present'
+                          ? 'bg-emerald-400/30'
                           : lastAttendance.status === 'absent'
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-yellow-600 dark:text-yellow-400'
-                      }`}>
-                        Status: {lastAttendance.status.toUpperCase()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Card ID: {lastAttendance.rfidCardId}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        User ID: {lastAttendance.userIdByInstitute}
-                      </p>
+                          ? 'bg-red-400/30'
+                          : 'bg-amber-400/30'
+                        : 'bg-blue-400/20'
+                    }`} />
+                    <div className={`relative p-8 rounded-full transition-all duration-300 ${
+                      lastAttendance 
+                        ? lastAttendance.status === 'present'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/50'
+                          : lastAttendance.status === 'absent'
+                          ? 'bg-red-100 dark:bg-red-900/50'
+                          : 'bg-amber-100 dark:bg-amber-900/50'
+                        : 'bg-blue-100 dark:bg-blue-900/50'
+                    }`}>
+                      {lastAttendance ? (
+                        <CheckCircle className={`h-20 w-20 sm:h-28 sm:w-28 transition-colors ${
+                          lastAttendance.status === 'present'
+                            ? 'text-emerald-500'
+                            : lastAttendance.status === 'absent'
+                            ? 'text-red-500'
+                            : 'text-amber-500'
+                        }`} strokeWidth={1.5} />
+                      ) : (
+                        <Wifi className="h-20 w-20 sm:h-28 sm:w-28 text-blue-500" strokeWidth={1.5} />
+                      )}
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      Place your RFID card near the scanner or enter ID below
-                    </p>
-                  )}
+                  </div>
+
+                  {/* Status Text */}
+                  <div className="text-center space-y-4">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                      {scannerStatus}
+                    </h2>
+                    
+                    {lastAttendance ? (
+                      <div className="space-y-4 flex flex-col items-center">
+                        {/* Student Image - Large & Modern */}
+                        {lastAttendance.imageUrl && (
+                          <div className="relative group">
+                            <div className={`absolute -inset-1 rounded-full blur-lg transition-opacity duration-500 ${
+                              lastAttendance.status === 'present'
+                                ? 'bg-emerald-400/40'
+                                : lastAttendance.status === 'absent'
+                                ? 'bg-red-400/40'
+                                : 'bg-amber-400/40'
+                            }`} />
+                            <img
+                              src={lastAttendance.imageUrl}
+                              alt={`${lastAttendance.studentName} photo`}
+                              className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover ring-4 ring-background shadow-2xl transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Student Name */}
+                        <p className={`text-2xl sm:text-3xl font-bold ${
+                          lastAttendance.status === 'present'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : lastAttendance.status === 'absent'
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-amber-600 dark:text-amber-400'
+                        }`}>
+                          {lastAttendance.studentName}
+                        </p>
+                        
+                        {/* Status Badge - Color Coded */}
+                        <div className={`px-6 py-2 rounded-full font-semibold text-lg ${
+                          lastAttendance.status === 'present'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                            : lastAttendance.status === 'absent'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                        }`}>
+                          {lastAttendance.status.toUpperCase()}
+                        </div>
+                        
+                        {/* Card Info */}
+                        <div className="space-y-1 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Card ID: <span className="font-mono font-medium">{lastAttendance.rfidCardId}</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            User ID: <span className="font-mono">{lastAttendance.userIdByInstitute}</span>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-lg text-muted-foreground max-w-md">
+                        Place your RFID card near the scanner or enter ID below
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>

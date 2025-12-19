@@ -237,18 +237,7 @@ const InstitutePayments = () => {
       }
     }
   }] : []),
-  ...(isInstituteAdmin ? [{
-    id: 'totalSubmissions',
-    label: 'Submissions',
-    minWidth: 100,
-    align: 'center' as const,
-    format: (value: number, row: InstitutePayment) => <div className="text-center">
-            <div className="font-semibold">{value || 0}</div>
-            <div className="text-xs text-muted-foreground">
-              {row.verifiedSubmissions || 0} verified
-            </div>
-          </div>
-  }] : [])], [isInstituteAdmin, isStudent]);
+  ], [isStudent]);
   const renderComponent = () => {
     // Debug logging for table data
     console.log('InstitutePayments Debug - Table data:', {

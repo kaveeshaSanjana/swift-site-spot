@@ -6,16 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Video, Calendar, Clock, Users, MapPin, ExternalLink, Plus, Edit, Trash2, Play } from 'lucide-react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
 import CreateInstituteLectureForm from '@/components/forms/CreateInstituteLectureForm';
 import UpdateInstituteLectureForm from '@/components/forms/UpdateInstituteLectureForm';
 import DeleteLectureConfirmDialog from '@/components/forms/DeleteLectureConfirmDialog';
 import { useInstituteRole } from '@/hooks/useInstituteRole';
+import { useToast } from '@/hooks/use-toast';
 
 const InstituteLectures = () => {
   const { selectedInstitute, user } = useAuth();
   const effectiveRole = useInstituteRole();
+  const { toast } = useToast();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -31,7 +32,11 @@ const InstituteLectures = () => {
 
   const fetchLectures = async (pageNum: number = 1, forceRefresh: boolean = false) => {
     if (!selectedInstitute?.id) {
-      toast.error('Please select an institute first');
+      toast({
+        title: 'Select Institute',
+        description: 'Please select an institute first',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -61,7 +66,11 @@ const InstituteLectures = () => {
       setTotalPages(Math.ceil(lecturesData.length / 10));
     } catch (error) {
       console.error('Error fetching institute lectures:', error);
-      toast.error('Failed to load institute lectures');
+      toast({
+        title: 'Failed to load lectures',
+        description: 'Failed to load institute lectures.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -98,7 +107,11 @@ const InstituteLectures = () => {
     if (lecture.meetingLink) {
       window.open(lecture.meetingLink, '_blank');
     } else {
-      toast.info('Meeting link not available');
+      toast({
+        title: 'Meeting link not available',
+        description: 'This lecture does not have a meeting link.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -107,7 +120,11 @@ const InstituteLectures = () => {
       setRecordingLecture(lecture);
       setShowRecordingDialog(true);
     } else {
-      toast.info('Recording not available');
+      toast({
+        title: 'Recording not available',
+        description: 'This lecture does not have a recording.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -142,20 +159,25 @@ const InstituteLectures = () => {
         { instituteId: selectedInstitute?.id }
       );
 
-      toast.success('Lecture Deleted', {
-        description: `${lectureToDelete.title} has been permanently deleted.`,
-      });
-
       // Immediately remove from UI (optimistic update)
       setLectures(prevLectures => prevLectures.filter(l => l.id !== lectureToDelete.id));
+      
+      // Show success toast (bottom-right)
+      toast({
+        title: 'Delete Success',
+        description: `${lectureToDelete.title} has been deleted successfully.`,
+        variant: 'success',
+      });
       
       // Close dialog and reset state
       setShowDeleteDialog(false);
       setLectureToDelete(null);
     } catch (error: any) {
       console.error('Error deleting lecture:', error);
-      toast.error('Delete Failed', {
-        description: error.response?.data?.message || 'Failed to delete lecture. Please try again.',
+      toast({
+        title: 'Delete Failed',
+        description: error?.response?.data?.message || 'Failed to delete lecture. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsDeleting(false);

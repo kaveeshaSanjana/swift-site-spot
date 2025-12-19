@@ -346,15 +346,19 @@ const Subjects = () => {
       <div className="flex items-center gap-2">
         {row.teacher ? (
           <Button
-            variant="outline"
+            variant="destructive"
             size="sm"
             onClick={() => handleUnassignTeacher(row)}
             disabled={isUnassigningTeacher || isAssigningTeacher}
             className="h-8 px-3"
             title="Remove teacher"
           >
-            <UserMinus className="h-4 w-4 mr-1" />
-            Remove
+            {isUnassigningTeacher && subjectToUnassign?.id === row.id ? (
+              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <UserMinus className="h-4 w-4 mr-1" />
+            )}
+            {isUnassigningTeacher && subjectToUnassign?.id === row.id ? 'Removing...' : 'Remove'}
           </Button>
         ) : (
           <Button
@@ -365,8 +369,12 @@ const Subjects = () => {
             className="h-8 px-3"
             title="Assign teacher"
           >
-            <UserPlus className="h-4 w-4 mr-1" />
-            Assign
+            {isAssigningTeacher && selectedSubjectForTeacher?.subjectId === (row.subjectId || row.id) ? (
+              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <UserPlus className="h-4 w-4 mr-1" />
+            )}
+            {isAssigningTeacher && selectedSubjectForTeacher?.subjectId === (row.subjectId || row.id) ? 'Assigning...' : 'Assign'}
           </Button>
         )}
       </div>
@@ -487,11 +495,6 @@ const Subjects = () => {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               
-              {canCreate && <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2" size="sm">
-                   <Plus className="h-4 w-4" />
-                   <span className="hidden sm:inline">Create Subject</span>
-                   <span className="sm:hidden">Create</span>
-                 </Button>}
                 
                 {(userRole === 'InstituteAdmin' || canAssignSubjects) && (
                   <Button onClick={() => setIsAssignDialogOpen(true)} style={{ backgroundColor: '#06923E' }} className="hover:opacity-90 text-white flex items-center gap-2" size="sm">

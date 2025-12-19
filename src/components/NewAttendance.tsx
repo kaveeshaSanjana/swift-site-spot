@@ -130,6 +130,7 @@ const NewAttendance = () => {
   const [endDate, setEndDate] = useState(getDefaultDates().endDate);
   const [sortOrder, setSortOrder] = useState<string>('descending');
   const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [showFilters, setShowFilters] = useState(false);
 
   // Check permissions based on role and context
@@ -220,7 +221,7 @@ const NewAttendance = () => {
         startDate,
         endDate,
         page: currentPage.toString(),
-        limit: '10'
+        limit: rowsPerPage.toString()
       });
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
@@ -301,12 +302,12 @@ const NewAttendance = () => {
     }
   };
 
-  // Load attendance data when page changes
+  // Load attendance data when page or rowsPerPage changes
   useEffect(() => {
     if (dataLoaded) {
       loadAttendanceData();
     }
-  }, [currentPage]);
+  }, [currentPage, rowsPerPage]);
 
   // Apply filters and sorting
   useEffect(() => {
@@ -688,9 +689,18 @@ const NewAttendance = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination rowsPerPageOptions={[10, 25, 50, 100]} component="div" count={attendanceData?.pagination.totalRecords || 0} rowsPerPage={10} page={currentPage - 1} onPageChange={(event, newPage) => setCurrentPage(newPage + 1)} onRowsPerPageChange={event => {
-          // Handle rows per page change if needed
-        }} />
+          <TablePagination 
+            rowsPerPageOptions={[25, 50, 100]} 
+            component="div" 
+            count={attendanceData?.pagination.totalRecords || 0} 
+            rowsPerPage={rowsPerPage} 
+            page={currentPage - 1} 
+            onPageChange={(event, newPage) => setCurrentPage(newPage + 1)} 
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setCurrentPage(1); // Reset to first page when changing rows per page
+            }} 
+          />
         </Paper>
       </div>
 

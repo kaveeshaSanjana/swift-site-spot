@@ -181,7 +181,7 @@ const HomeworkSubmissionsDialog = ({ homework, isOpen, onClose }: HomeworkSubmis
 
                   {submission.remarks && (
                     <div>
-                      <h4 className="text-sm font-medium mb-1">Student Notes:</h4>
+                      <h4 className="text-sm font-medium mb-1">Teacher Notes:</h4>
                       <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
                         {submission.remarks}
                       </p>
@@ -193,7 +193,7 @@ const HomeworkSubmissionsDialog = ({ homework, isOpen, onClose }: HomeworkSubmis
                       <h4 className="text-sm font-medium mb-2">Submitted File:</h4>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="default"
                         onClick={() => window.open(submission.fileUrl, '_blank')}
                       >
                         <ExternalLink className="h-3 w-3 mr-1" />
@@ -207,7 +207,7 @@ const HomeworkSubmissionsDialog = ({ homework, isOpen, onClose }: HomeworkSubmis
                       <h4 className="text-sm font-medium mb-2">Teacher Correction:</h4>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="default"
                         onClick={() => window.open(submission.teacherCorrectionFileUrl, '_blank')}
                       >
                         <ExternalLink className="h-3 w-3 mr-1" />

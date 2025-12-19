@@ -95,6 +95,7 @@ const AppContent = ({ initialPage }: AppContentProps) => {
   const { navigateToPage, getPageFromPath } = useAppNavigation();
   const location = useLocation();
   const navigate = useNavigate();
+  const [hasNavigatedAfterLogin, setHasNavigatedAfterLogin] = React.useState(false);
   
   // Sync URL context with AuthContext and validate access (403 if unauthorized)
   const { isValidating } = useRouteContext();
@@ -144,6 +145,21 @@ const AppContent = ({ initialPage }: AppContentProps) => {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
+  // Auto-navigate to Select Institute page after login
+  React.useEffect(() => {
+    if (user && !hasNavigatedAfterLogin && !selectedInstitute && (location.pathname === '/dashboard' || location.pathname === '/')) {
+      console.log('🏢 Auto-navigating to Select Institute after login');
+      setHasNavigatedAfterLogin(true);
+      navigate('/select-institute');
+    }
+  }, [user, hasNavigatedAfterLogin, selectedInstitute, location.pathname, navigate]);
+  
+  // Reset the flag when user logs out
+  React.useEffect(() => {
+    if (!user) {
+      setHasNavigatedAfterLogin(false);
+    }
+  }, [user]);
   const [showCreateOrgForm, setShowCreateOrgForm] = useState(false);
   const [organizationCurrentPage, setOrganizationCurrentPage] = useState('organizations');
 
@@ -254,7 +270,7 @@ const AppContent = ({ initialPage }: AppContentProps) => {
 
       return (
         <div className="mb-4 sm:mb-6">
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
             {title}
           </h3>
           <div className="space-y-1">
@@ -264,8 +280,8 @@ const AppContent = ({ initialPage }: AppContentProps) => {
                 variant={organizationCurrentPage === item.id ? "secondary" : "ghost"}
                 className={`w-full justify-start h-9 sm:h-10 px-3 text-sm ${
                   organizationCurrentPage === item.id 
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 border-r-2 border-blue-600' 
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500' 
+                    : 'text-foreground/70 hover:bg-muted hover:text-foreground'
                 }`}
                 onClick={() => handleNavigation(item.id)}
               >
@@ -319,10 +335,10 @@ const AppContent = ({ initialPage }: AppContentProps) => {
             overflow-hidden
           `}>
             {/* Header */}
-            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
               <div className="flex items-center space-x-2 min-w-0">
                 <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0" />
-                <span className="font-bold text-base sm:text-lg text-gray-900 dark:text-white truncate">
+                <span className="font-bold text-base sm:text-lg text-foreground truncate">
                   Organization
                 </span>
               </div>
@@ -331,7 +347,7 @@ const AppContent = ({ initialPage }: AppContentProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsSidebarOpen(false)}
-                  className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="h-8 w-8 p-0 hover:bg-muted"
                   aria-label="Close Sidebar"
                 >
                   <X className="h-4 w-4 md:hidden" />
@@ -341,7 +357,7 @@ const AppContent = ({ initialPage }: AppContentProps) => {
             </div>
 
             {/* Context Info */}
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-border">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                   Management Hub
@@ -371,12 +387,12 @@ const AppContent = ({ initialPage }: AppContentProps) => {
             </ScrollArea>
 
             {/* Footer */}
-            <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="p-3 sm:p-4 border-t border-border">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleBackToMain}
-                className="w-full flex items-center justify-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 h-8 sm:h-9"
+                className="w-full flex items-center justify-center gap-2 text-sm hover:bg-muted h-8 sm:h-9"
               >
                 <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">Back to Main</span>

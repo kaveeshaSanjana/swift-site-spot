@@ -295,12 +295,13 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
           <div className="space-y-4">
             {imageSrc && (
               <div className="flex justify-center">
-                <ReactCrop
+              <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
-                  aspect={1}
-                  circularCrop
+                  minWidth={30}
+                  minHeight={30}
+                  keepSelection
                 >
                   <img
                     ref={imgRef}

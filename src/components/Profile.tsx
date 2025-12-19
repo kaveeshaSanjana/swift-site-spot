@@ -29,7 +29,8 @@ interface UserData {
 }
 const Profile = () => {
   const {
-    user
+    user,
+    logout
   } = useAuth();
   const instituteRole = useInstituteRole();
   const {
@@ -149,6 +150,16 @@ const Profile = () => {
     console.log('Profile image updated:', newImageUrl);
   };
 
+  const validatePassword = (password: string): boolean => {
+    // More permissive validation - just check length and basic requirements
+    if (password.length < 8 || password.length > 20) return false;
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password); // Any non-alphanumeric character
+    return hasLowercase && hasUppercase && hasNumber && hasSpecial;
+  };
+
   const handlePasswordChange = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmNewPassword) {
       toast({
@@ -168,10 +179,10 @@ const Profile = () => {
       return;
     }
 
-    if (passwordData.newPassword.length < 8) {
+    if (!validatePassword(passwordData.newPassword)) {
       toast({
         title: "Error",
-        description: "Password must be at least 8 characters long.",
+        description: "Password must be 8-20 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
         variant: "destructive"
       });
       return;
@@ -179,28 +190,99 @@ const Profile = () => {
 
     setPasswordLoading(true);
     try {
-      const response = await apiClient.post('/auth/change-password', {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-        confirmNewPassword: passwordData.confirmNewPassword
+      // Use direct fetch to bypass apiClient's automatic 401/logout handling
+      const baseUrl = import.meta.env.VITE_LMS_BASE_URL || 'https://lmsapi.suraksha.lk';
+      
+      // Get the fresh token from localStorage (set during login)
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Please login again to change your password.",
+          variant: "destructive"
+        });
+        await logout();
+        return;
+      }
+
+      console.log('🔐 Attempting password change with token:', token.substring(0, 20) + '...');
+      
+      // Try v2 endpoint first (matches login endpoint pattern), fallback to v1
+      let response = await fetch(`${baseUrl}/v2/auth/change-password`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+          confirmNewPassword: passwordData.confirmNewPassword
+        })
       });
 
-      if (response.success) {
+      // If v2 endpoint returns 404, try v1 endpoint
+      if (response.status === 404) {
+        console.log('🔄 v2 endpoint not found, trying v1...');
+        response = await fetch(`${baseUrl}/auth/change-password`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+            confirmNewPassword: passwordData.confirmNewPassword
+          })
+        });
+      }
+
+      const data = await response.json();
+      console.log('🔐 Password change response:', response.status, data);
+
+      if (response.ok && (data.success !== false || data.isSuccess || data.message === "Password changed successfully")) {
+        // Show success popup - title MUST contain "Success" for toast filter
         toast({
           title: "Success",
-          description: response.message || "Password changed successfully"
+          description: "✅ Your Password Changed Successfully! You will be logged out now.",
         });
+        
         setPasswordData({
           currentPassword: '',
           newPassword: '',
           confirmNewPassword: ''
+        });
+        
+        // Auto logout after 2 seconds
+        setTimeout(async () => {
+          await logout();
+        }, 2000);
+      } else if (response.status === 401) {
+        // 401 could mean: wrong current password OR expired token
+        const errorMessage = data.details?.message || data.message || "Invalid current password or session expired. Please check your current password or login again.";
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      } else {
+        // Handle other error responses
+        const errorMessage = data.message || data.details?.message || "Failed to change password. Please check your current password.";
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive"
         });
       }
     } catch (error: any) {
       console.error('Password change error:', error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to change password. Please try again.",
+        description: "Failed to change password. Please try again.",
         variant: "destructive"
       });
     } finally {

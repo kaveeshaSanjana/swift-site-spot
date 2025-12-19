@@ -114,7 +114,7 @@ const CreateHomeworkForm = ({ onClose, onSuccess }: CreateHomeworkFormProps) => 
       console.error('Error creating homework:', error);
       toast({
         title: "Creation Failed",
-        description: error?.response?.data?.message || "Failed to create homework.",
+        description: error?.message || "Failed to create homework.",
         variant: "destructive"
       });
     } finally {
