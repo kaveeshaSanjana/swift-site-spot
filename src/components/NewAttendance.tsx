@@ -450,7 +450,7 @@ const NewAttendance = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             View and manage attendance records
           </p>
-          <Button onClick={loadAttendanceData} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={loadAttendanceData} disabled={isLoading} className="gap-2" size="lg">
             {isLoading ? <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 Loading Data...
@@ -465,106 +465,162 @@ const NewAttendance = () => {
   return <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Current Selection: {getContextInfo()}
+          <p className="text-sm text-muted-foreground">
+            Current Selection: <span className="font-medium text-foreground">{getContextInfo()}</span>
           </p>
         </div>
-        <Button onClick={loadAttendanceData} disabled={isLoading} variant="outline" size="sm">
-          {isLoading ? <>
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Refreshing...
-            </> : <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </>}
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button onClick={loadAttendanceData} disabled={isLoading} variant="outline" size="sm" className="gap-2">
+            {isLoading ? <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Refreshing...
+              </> : <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </>}
+          </Button>
+
+          <Button onClick={() => setShowFilters(!showFilters)} variant="outline" size="sm" className="gap-2">
+            <Filter className="h-4 w-4" />
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </Button>
+        </div>
       </div>
 
-      {/* Filter Toggle Button */}
-      <div className="flex justify-end">
-        <Button onClick={() => setShowFilters(!showFilters)} variant="outline" size="sm" className="gap-2">
-          <Filter className="h-4 w-4" />
-          {showFilters ? 'Hide Filters' : 'Show Filters'}
-        </Button>
-      </div>
-
-      {/* Date Range Filter */}
-      {showFilters && <Card>
-          <CardContent>
+      {/* Filters */}
+      {showFilters && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Filters</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Date Range */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Start Date</label>
-                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground block">Start Date</label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="input-premium"
+                />
               </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">End Date</label>
-                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground block">End Date</label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="input-premium"
+                />
               </div>
-              <Button onClick={loadAttendanceData} disabled={isLoading}>
-                Apply Filter
+              <Button onClick={loadAttendanceData} disabled={isLoading} className="gap-2">
+                <Calendar className="h-4 w-4" />
+                Apply
               </Button>
             </div>
 
-            {/* Additional Filters */}
+            {/* Quick Filters */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input placeholder="Search records..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name / ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 input-premium"
+                />
               </div>
 
-              {/* Status Filter */}
+              {/* Status */}
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
+                <SelectTrigger className="input-premium">
+                  <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="present">Present</SelectItem>
                   <SelectItem value="absent">Absent</SelectItem>
                   <SelectItem value="late">Late</SelectItem>
                 </SelectContent>
               </Select>
 
-              {/* Occupation Filter */}
+              {/* Occupation */}
               <Popover open={occupationSearchOpen} onOpenChange={setOccupationSearchOpen}>
                 <PopoverTrigger asChild>
-                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={occupationSearchOpen}
+                    className="w-full justify-between input-premium"
+                  >
+                    <span className="truncate">
+                      {occupationFilter ? formatOccupation(occupationFilter as Occupation) : 'All Occupations'}
+                    </span>
+                    <ChevronsUpDown className="h-4 w-4 opacity-60" />
+                  </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0 pointer-events-auto bg-background border shadow-md z-50" align="start">
-                  <Command className="bg-background">
+                <PopoverContent
+                  className="w-[300px] p-0 pointer-events-auto bg-popover border shadow-md z-50"
+                  align="start"
+                >
+                  <Command className="bg-popover">
                     <CommandInput placeholder="Search occupation..." className="h-9 border-b" />
                     <CommandList className="max-h-[300px] overflow-y-auto">
                       <CommandEmpty className="py-6 text-center text-sm">No occupation found.</CommandEmpty>
                       <CommandGroup>
-                        <CommandItem value="all" onSelect={() => {
-                      setOccupationFilter('');
-                      setOccupationSearchOpen(false);
-                    }} className="cursor-pointer">
-                          <Check className={cn("mr-2 h-4 w-4", occupationFilter === '' ? "opacity-100" : "opacity-0")} />
+                        <CommandItem
+                          value="all"
+                          onSelect={() => {
+                            setOccupationFilter('');
+                            setOccupationSearchOpen(false);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              occupationFilter === '' ? "opacity-100" : "opacity-0"
+                            )}
+                          />
                           All Occupations
                         </CommandItem>
-                        {Object.values(Occupation).map(occupation => <CommandItem key={occupation} value={formatOccupation(occupation)} onSelect={() => {
-                      setOccupationFilter(occupation === occupationFilter ? '' : occupation);
-                      setOccupationSearchOpen(false);
-                    }} className="cursor-pointer">
-                            <Check className={cn("mr-2 h-4 w-4", occupationFilter === occupation ? "opacity-100" : "opacity-0")} />
+                        {Object.values(Occupation).map((occupation) => (
+                          <CommandItem
+                            key={occupation}
+                            value={formatOccupation(occupation)}
+                            onSelect={() => {
+                              setOccupationFilter(occupation === occupationFilter ? '' : occupation);
+                              setOccupationSearchOpen(false);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                occupationFilter === occupation ? "opacity-100" : "opacity-0"
+                              )}
+                            />
                             {formatOccupation(occupation)}
-                          </CommandItem>)}
+                          </CommandItem>
+                        ))}
                       </CommandGroup>
                     </CommandList>
                   </Command>
                 </PopoverContent>
               </Popover>
 
-              {/* Sort Order */}
+              {/* Sort */}
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Date" />
+                <SelectTrigger className="input-premium">
+                  <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="descending">Newest First</SelectItem>
@@ -573,7 +629,8 @@ const NewAttendance = () => {
               </Select>
             </div>
           </CardContent>
-        </Card>}
+        </Card>
+      )}
 
       {/* Summary Cards */}
       {attendanceData?.summary && <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
