@@ -279,16 +279,30 @@ const RfidAttendance = () => {
                       <img
                         src={lastAttendance.imageUrl}
                         alt={`${lastAttendance.studentName} photo`}
-                        className="h-48 w-48 sm:h-56 sm:w-56 rounded-lg object-cover border-4 border-destructive shadow-lg"
+                        className={`h-48 w-48 sm:h-56 sm:w-56 rounded-lg object-cover border-4 shadow-lg ${
+                          lastAttendance.status === 'present'
+                            ? 'border-success'
+                            : lastAttendance.status === 'absent'
+                            ? 'border-destructive'
+                            : 'border-warning'
+                        }`}
                       />
-                      {/* Success Checkmark */}
-                      <div className="absolute -bottom-3 -right-3 bg-emerald-500 rounded-full p-2 shadow-lg">
-                        <CheckCircle className="h-8 w-8 text-white" />
+                      {/* Status Check */}
+                      <div
+                        className={`absolute -bottom-3 -right-3 rounded-full p-2 shadow-lg ${
+                          lastAttendance.status === 'present'
+                            ? 'bg-success'
+                            : lastAttendance.status === 'absent'
+                            ? 'bg-destructive'
+                            : 'bg-warning'
+                        }`}
+                      >
+                        <CheckCircle className="h-8 w-8 text-primary-foreground" />
                       </div>
                     </div>
                   ) : (
-                    <div className="h-48 w-48 sm:h-56 sm:w-56 border-4 border-red-500 rounded-lg flex items-center justify-center bg-muted/30">
-                      <User className="h-20 w-20 text-red-400" />
+                    <div className="h-48 w-48 sm:h-56 sm:w-56 border-4 border-destructive rounded-lg flex items-center justify-center bg-muted/30">
+                      <User className="h-20 w-20 text-destructive" />
                     </div>
                   )}
                 </div>
@@ -296,33 +310,43 @@ const RfidAttendance = () => {
                 {/* Student Info */}
                 {lastAttendance && (
                   <div className="text-center space-y-3">
-                    <p className={`text-xl font-bold ${
-                      lastAttendance.status === 'present' 
-                        ? 'text-emerald-600 dark:text-emerald-400' 
-                        : lastAttendance.status === 'absent'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-amber-600 dark:text-amber-400'
-                    }`}>
+                    <p
+                      className={`text-xl font-bold ${
+                        lastAttendance.status === 'present'
+                          ? 'text-success'
+                          : lastAttendance.status === 'absent'
+                          ? 'text-destructive'
+                          : 'text-warning'
+                      }`}
+                    >
                       {lastAttendance.studentName}
                     </p>
-                    <div className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold ${
-                      lastAttendance.status === 'present' 
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' 
-                        : lastAttendance.status === 'absent'
-                        ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
-                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
-                    }`}>
+                    <div
+                      className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold border ${
+                        lastAttendance.status === 'present'
+                          ? 'bg-success/10 text-success border-success/20'
+                          : lastAttendance.status === 'absent'
+                          ? 'bg-destructive/10 text-destructive border-destructive/20'
+                          : 'bg-warning/10 text-warning border-warning/20'
+                      }`}
+                    >
                       Status: {lastAttendance.status.toUpperCase()}
                     </div>
-                    <div className={`text-sm space-y-1 ${
-                      lastAttendance.status === 'present' 
-                        ? 'text-emerald-600 dark:text-emerald-400' 
-                        : lastAttendance.status === 'absent'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-amber-600 dark:text-amber-400'
-                    }`}>
-                      <p>Card ID: <span className="font-medium">{lastAttendance.rfidCardId}</span></p>
-                      <p>User ID: <span className="font-medium">{lastAttendance.userIdByInstitute}</span></p>
+                    <div
+                      className={`text-sm space-y-1 ${
+                        lastAttendance.status === 'present'
+                          ? 'text-success'
+                          : lastAttendance.status === 'absent'
+                          ? 'text-destructive'
+                          : 'text-warning'
+                      }`}
+                    >
+                      <p>
+                        Card ID: <span className="font-medium">{lastAttendance.rfidCardId}</span>
+                      </p>
+                      <p>
+                        User ID: <span className="font-medium">{lastAttendance.userIdByInstitute}</span>
+                      </p>
                     </div>
                   </div>
                 )}
@@ -344,7 +368,7 @@ const RfidAttendance = () => {
                     onChange={(e) => setRfidCardId(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={isProcessing}
-                    className="h-12 text-base border-2 border-primary focus:border-primary focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="h-12 text-base border-2 border-input focus-visible:border-primary focus-visible:ring-0 focus-visible:ring-offset-0"
                     autoFocus
                   />
                 </div>
@@ -359,7 +383,7 @@ const RfidAttendance = () => {
                     onValueChange={(value: 'present' | 'absent' | 'late') => setStatus(value)}
                     disabled={isProcessing}
                   >
-                    <SelectTrigger id="status-select" className="h-12 text-base border-2 border-blue-500">
+                    <SelectTrigger id="status-select" className="h-12 text-base border-2 border-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -374,8 +398,8 @@ const RfidAttendance = () => {
                 <Button
                   onClick={handleMarkAttendance}
                   disabled={isProcessing || !rfidCardId.trim()}
-                  className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white"
-                  size="lg"
+                  className="w-full font-semibold"
+                  size="xl"
                 >
                   {isProcessing ? (
                     <>
