@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, CheckCircle, Loader2, User } from 'lucide-react';
+import { MapPin, CheckCircle, Loader2, User, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -197,6 +197,23 @@ const InstituteMarkAttendance = () => {
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(-1)} 
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-xl font-semibold text-foreground">
+              Mark Attendance
+            </h1>
+          </div>
+        </div>
+
         {/* Current Selection Card */}
         <Card className="border-primary/20 bg-card shadow-sm">
           <CardContent className="p-4">
@@ -345,20 +362,14 @@ const InstituteMarkAttendance = () => {
                   >
                     <SelectTrigger 
                       id="status-select" 
-                      className={`h-12 text-base border-2 ${
-                        status === 'present' 
-                          ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400' 
-                          : status === 'absent'
-                          ? 'border-red-500 text-red-600 dark:text-red-400'
-                          : 'border-amber-500 text-amber-600 dark:text-amber-400'
-                      }`}
+                      className="h-12 text-base border-2 border-blue-500"
                     >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="present" className="text-emerald-600 dark:text-emerald-400">Present</SelectItem>
-                      <SelectItem value="absent" className="text-red-600 dark:text-red-400">Absent</SelectItem>
-                      <SelectItem value="late" className="text-amber-600 dark:text-amber-400">Late</SelectItem>
+                      <SelectItem value="present" className="text-muted-foreground">Present</SelectItem>
+                      <SelectItem value="absent" className="text-muted-foreground">Absent</SelectItem>
+                      <SelectItem value="late" className="text-muted-foreground">Late</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
