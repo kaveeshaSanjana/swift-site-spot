@@ -202,14 +202,14 @@ const InstituteMarkAttendance = () => {
           <Button
             variant="outline"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            className="flex items-center gap-2 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div className="flex-1">
             <h1 className="text-xl font-semibold text-foreground">
-              Mark Attendance
+              Institute Card Mark Attendance
             </h1>
           </div>
         </div>

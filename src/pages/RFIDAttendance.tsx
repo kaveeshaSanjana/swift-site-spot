@@ -209,10 +209,10 @@ const RfidAttendance = () => {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/qr-attendance')} 
-            className="flex items-center gap-2"
+          <Button
+            variant="outline"
+            onClick={() => navigate('/qr-attendance')}
+            className="flex items-center gap-2 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
