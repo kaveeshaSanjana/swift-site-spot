@@ -3,7 +3,6 @@ import { Toaster as Sonner, toast } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
-// Success/info toasts: top-left (for attendance alerts)
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
 
@@ -11,16 +10,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      position="top-left"
+      position="top-right"
+      richColors
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:text-xs group-[.toaster]:py-2 group-[.toaster]:px-3",
-          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-[11px]",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+          error: "group-[.toast]:bg-destructive group-[.toast]:text-destructive-foreground group-[.toast]:border-destructive",
         },
       }}
       {...props}
@@ -28,29 +29,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
-// Error toasts: bottom-right
-const ErrorToaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
-  return (
-    <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group error-toaster"
-      position="bottom-right"
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-destructive group-[.toaster]:text-destructive-foreground group-[.toaster]:border-destructive group-[.toaster]:shadow-lg group-[.toaster]:text-xs group-[.toaster]:py-2 group-[.toaster]:px-3",
-          description: "group-[.toast]:text-destructive-foreground/90 group-[.toast]:text-[11px]",
-          actionButton:
-            "group-[.toast]:bg-background group-[.toast]:text-foreground",
-          cancelButton:
-            "group-[.toast]:bg-background/20 group-[.toaster]:text-destructive-foreground",
-        },
-      }}
-      {...props}
-    />
-  )
-}
-
-export { Toaster, ErrorToaster, toast }
+export { Toaster, toast }
