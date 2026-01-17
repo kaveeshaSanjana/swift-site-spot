@@ -82,42 +82,59 @@ const Profile = () => {
   const [activeProfileTab, setActiveProfileTab] = useState('details');
   const userPermissions = AccessControl.getPermissions(instituteRole);
 
-  // Remove automatic loading - set default values instead
+  // Load user data from /auth/me endpoint
   const loadUserData = async () => {
-    if (!user?.id) return;
     setLoading(true);
     try {
-      console.log('Fetching user data for ID:', user.id);
-      const response = await enhancedCachedClient.get<UserData>(
-        `/users/${user.id}`,
-        {},
-        {
-          ttl: CACHE_TTL.USER_PROFILE,
-          forceRefresh: false,
-          userId: user.id
-        }
-      );
+      console.log('Fetching user data from /auth/me');
+      const response = await apiClient.get<{ success: boolean; data: any }>('/auth/me');
       console.log('User data response:', response);
-      setUserData(response);
+      
+      if (response.success && response.data) {
+        const userData = response.data;
+        setUserData({
+          id: userData.id || '',
+          nameWithInitials: userData.nameWithInitials || '',
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
+          email: userData.email || '',
+          phone: userData.phoneNumber || '',
+          userType: userData.userType || '',
+          dateOfBirth: userData.dateOfBirth || '',
+          gender: userData.gender || '',
+          nic: userData.nic || '',
+          birthCertificateNo: userData.birthCertificateNo || '',
+          addressLine1: userData.addressLine1 || '',
+          city: userData.city || '',
+          district: userData.district || '',
+          province: userData.province || '',
+          postalCode: userData.postalCode || '',
+          country: userData.country || '',
+          imageUrl: userData.imageUrl || '',
+          isActive: userData.isActive ?? true,
+          createdAt: userData.createdAt || '',
+          updatedAt: userData.updatedAt || ''
+        });
 
-      // Update form data with API response
-      setFormData({
-        name: `${response.firstName || ''} ${response.lastName || ''}`.trim(),
-        nameWithInitials: response.nameWithInitials || '',
-        email: response.email || '',
-        phone: response.phone || '',
-        dateOfBirth: response.dateOfBirth || '',
-        gender: response.gender || '',
-        nic: response.nic || '',
-        birthCertificateNo: response.birthCertificateNo || '',
-        addressLine1: response.addressLine1 || '',
-        city: response.city || '',
-        district: response.district || '',
-        province: response.province || '',
-        postalCode: response.postalCode || '',
-        country: response.country || '',
-        joinDate: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : ''
-      });
+        // Update form data with API response
+        setFormData({
+          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+          nameWithInitials: userData.nameWithInitials || '',
+          email: userData.email || '',
+          phone: userData.phoneNumber || '',
+          dateOfBirth: userData.dateOfBirth || '',
+          gender: userData.gender || '',
+          nic: userData.nic || '',
+          birthCertificateNo: userData.birthCertificateNo || '',
+          addressLine1: userData.addressLine1 || '',
+          city: userData.city || '',
+          district: userData.district || '',
+          province: userData.province || '',
+          postalCode: userData.postalCode || '',
+          country: userData.country || '',
+          joinDate: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : ''
+        });
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast({
@@ -132,10 +149,8 @@ const Profile = () => {
 
   // Auto-load user data on mount
   React.useEffect(() => {
-    if (user?.id) {
-      loadUserData();
-    }
-  }, [user?.id]);
+    loadUserData();
+  }, []);
   const handleSave = () => {
     // Save logic would go here
     console.log('Saving profile:', formData);
