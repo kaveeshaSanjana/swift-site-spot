@@ -2,8 +2,6 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Upload, ImageIcon, Loader2, Camera as CameraIcon } from 'lucide-react';
-import { Capacitor } from '@capacitor/core';
-import { Camera as CapCamera, CameraDirection, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useToast } from '@/hooks/use-toast';
 import ReactCrop, {
   type Crop,
@@ -273,42 +271,7 @@ const PassportImageCropUpload: React.FC<PassportImageCropUploadProps> = ({
     }
   }, [stopCamera]);
 
-  const takeNativePhoto = useCallback(async () => {
-    try {
-      const photo = await CapCamera.getPhoto({
-        source: CameraSource.Camera,
-        resultType: CameraResultType.Uri,
-        quality: 90,
-        direction: CameraDirection.Front,
-      });
-
-      if (!photo.webPath) throw new Error('No photo webPath');
-
-      const resp = await fetch(photo.webPath);
-      const blob = await resp.blob();
-      const ext = blob.type?.includes('png') ? 'png' : 'jpg';
-      const file = new File([blob], `camera-${Date.now()}.${ext}`, {
-        type: blob.type || 'image/jpeg',
-      });
-
-      handleSelectedFile(file);
-    } catch (error) {
-      console.error('Native camera failed:', error);
-      toast({
-        title: 'Camera unavailable',
-        description: 'Please allow camera permission and try again.',
-        variant: 'destructive',
-      });
-    }
-  }, [handleSelectedFile, toast]);
-
   const handleCameraClick = async () => {
-    // Camera button should open camera (not a folder picker)
-    if (Capacitor.isNativePlatform()) {
-      await takeNativePhoto();
-      return;
-    }
-
     try {
       setCameraOpen(true);
       await startCamera();

@@ -16,11 +16,6 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.3",
-    "@capacitor/camera": "^8.0.0",
-    "@capacitor/cli": "^7.4.3",
-    "@capacitor/core": "^7.4.3",
-    "@capacitor/ios": "^7.4.3",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^3.9.0",

@@ -112,8 +112,8 @@ const CardDemo: React.FC = () => {
         <div className="mt-12 p-6 rounded-xl bg-card border border-border">
           <h2 className="text-xl font-semibold text-foreground mb-4">Mobile Ready</h2>
           <p className="text-muted-foreground mb-4">
-            These cards are fully responsive and optimized for mobile devices. With Capacitor integration, 
-            they work seamlessly across web, iOS, and Android platforms.
+            These cards are fully responsive and optimized for mobile devices, delivering a smooth experience
+            across modern browsers and platform-specific wrappers.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div className="p-4 rounded-lg bg-muted">
